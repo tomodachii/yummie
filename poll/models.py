@@ -53,7 +53,10 @@ class Vote(models.Model):
     menu = models.ForeignKey(
         Menu, on_delete=models.SET_NULL, null=True, blank=True)
     user_name = models.CharField(max_length=300)
-    dish_name = models.CharField(max_length=300)
+    DISH_LIST = ((i['name'], i['name'])
+                 for i in Dish.objects.all().values('name'))
+    dish_name = models.CharField(
+        max_length=300, choices=DISH_LIST, blank=True, null=True, help_text='Dish')
     cost = models.DecimalField(max_digits=20, decimal_places=2)
     vote_as = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField()
