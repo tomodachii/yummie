@@ -1,0 +1,21 @@
+{% extends "base_generic.html" %} {% block content %}
+<form action="" method="post">
+  {% csrf_token %}
+  <div class="card mt-5" style="width: 80vw; margin: auto">
+    <div class="card-body">
+      <h1 class="card-title">Menu ngày {{menu.due}}</h1>
+      <h2 class="card-title">{{dish.name}}</h2>
+      <p class="card-text">
+        Some quick example text to build on the card title and make up the bulk
+        of the card's content.
+      </p>
+      <h5>Giá {{dish.price}}</h5>
+      <div class="form-check">
+        {{form}}
+        <div class="form-check-label">Vote</div>
+      </div>
+    </div>
+  </div>
+</form>
+<h1>{{temp}}</h1>
+{% endblock %}

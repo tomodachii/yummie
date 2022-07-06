@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from .models import Dish, Menu, Vote
 from django.contrib.auth.models import User
@@ -6,7 +6,7 @@ from .forms import NewUserForm, NewVoteForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.forms import formset_factory
+import datetime
 
 # Create your views here.
 # def store_vote(request):
@@ -40,9 +40,8 @@ def get_vote_view(request):
                 messages.warning(request, 'Please correct the error below.')
         else:
             form = NewVoteForm()
-        # temp = request.POST
+
         return render(request, 'poll/poll.html', context={
-            "form": form,
             "menu": menu,
             "message": message
         })
@@ -51,8 +50,41 @@ def get_vote_view(request):
         print(e)
 
 
-def make_vote(request):
-    pass
+@login_required
+def make_vote(request, menu_id, dish_id):
+    menu = Menu.objects.get(pk=menu_id)
+    dish = Dish.objects.get(pk=dish_id)
+    user = request.user
+    temp = ''
+    try:
+        if request.method == 'POST':
+            form = NewVoteForm(request.POST)
+            if form.is_valid():
+                temp = request.POST.get('vote')
+                if temp == 'on':
+                    temp = 'Vote thành công'
+                    Vote.objects.create(
+                        user_id=user.id, menu_id=menu.id, user_name=user.get_user_name(), dish_name=dish.name, cost=dish.price, created_at=datetime.datetime.now())
+                    messages.success(
+                        request, 'Project has successful created!')
+                else:
+                    temp = 'Hủy vote thành công'
+                return HttpResponseRedirect('/poll/')
+            else:
+                messages.warning(request, 'Please correct the error below.')
+        else:
+            form = NewVoteForm()
+
+        return render(request, 'poll/vote.html', context={
+            'form': form,
+            'menu': menu,
+            'dish': dish,
+            'temp': temp,
+        })
+
+    except Exception as e:
+        # return HttpResponseRedirect('/poll/')
+        print(e)
 
 
 def register_request(request):
