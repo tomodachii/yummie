@@ -49,6 +49,14 @@ class Menu(models.Model):
         """String for representing the Model object."""
         return f'{self.due}'
 
+    def get_absolute_url(self):
+        """Returns the URL to access a particular author instance."""
+        # return reverse('author-detail', args=[str(self.id)])
+        return reverse('poll')
+
+    class Meta:
+        ordering = ['due']
+
 
 class Vote(models.Model):
     user = models.ForeignKey(

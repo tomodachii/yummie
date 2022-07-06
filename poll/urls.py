@@ -5,5 +5,10 @@ from . import views
 urlpatterns = [
     path('poll/', views.get_vote_view, name='poll'),
     path('accounts/register', views.register_request, name="register"),
-    path('poll/<int:menu_id>/<int:dish_id>/vote', views.make_vote, name='vote'),
+    path('poll/<int:menu_id>/<int:dish_id>/vote',
+         views.make_vote, name='poll-vote'),
+    # path('poll/create/', views.create_poll, name="poll-create"),
+    path('poll/create/', views.MenuCreate.as_view(), name='poll-create'),
+    path('poll/<int:pk>/update/', views.MenuUpdate.as_view(), name='poll-update'),
+    path('poll/<int:pk>/delete/', views.MenuDelete.as_view(), name='poll-delete'),
 ]

@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
+
 # Create your forms here.
 
 
@@ -10,7 +11,8 @@ class NewUserForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ("username", "email", "password1", "password2")
+        fields = ("username", "email", "first_name",
+                  "last_name", "password1", "password2")
 
     def save(self, commit=True):
         user = super(NewUserForm, self).save(commit=False)
@@ -21,6 +23,18 @@ class NewUserForm(UserCreationForm):
 
 
 class NewVoteForm(forms.Form):
+    vote = forms.CharField(
+        widget=forms.CheckboxInput(
+            attrs={
+                'class': 'form-check-input',
+                'onclick': 'this.form.submit();',
+            }
+        ),
+        label=False,
+    )
+
+
+class NewPollForm(forms.Form):
     vote = forms.CharField(
         widget=forms.CheckboxInput(
             attrs={
