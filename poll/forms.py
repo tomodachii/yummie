@@ -26,7 +26,6 @@ class NewVoteForm(forms.Form):
             attrs={
                 'class': 'form-check-input',
                 'onclick': 'this.form.submit();',
-                'name': 'hello'
             }
         ),
         label=False,
