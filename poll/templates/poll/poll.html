@@ -1,4 +1,83 @@
 {% extends "base_generic.html" %} {% block content %}
-<h1>hello hello yummie</h1>
-
-{% endblock %}
+<div class="row mt-5">
+  <div class="col-sm-7 col-lg-7">
+    
+    <div class="list-group">
+      {% for menu_instance in menu %}
+        <div class="list-item p-3 border mb-3">
+            <h5 class="card-title">Menu ngày {{menu_instance.due}}</h5>
+            <p class="card-text">
+              Danh sách món ăn: {{menu_instance.display_dish}}
+            </p>
+            <p class="card-text">
+              <small class="text-muted"
+                >Trạng thái: {% if menu_instance.status == 'o' %}<span
+                  class="text-success"
+                  >open</span
+                >{% else %}<span class="text-danger">closed</span>{% endif %}</small
+              >
+            </p>
+            {% if user.is_authenticated %}
+              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal-{{menu_instance.id}}">
+                Launch demo modal
+              </button>
+            {% else %}
+              <a href="{% url 'login' %}" class="text-info">Đăng nhập để vote</a>
+            {% endif %}
+            
+            <!-- Modal -->
+            
+              <div class="modal fade" id="exampleModal-{{menu_instance.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLabel">Hết hạn: {{menu_instance.due}}</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="row">
+                      {% for dish_instance in menu_instance.list_dish %}
+                        <div class="col-sm-6 my-2">
+                          <div class="card">
+                            <div class="card-body">
+                              <h5 class="card-title">{{dish_instance.name}}</h5>
+                              <p class="card-text">{{dish_instance.price}}</p>
+                              <form action="" method="post">
+                                <input type="hidden" name="menu_id" value="{{menu_instance.id}}" />
+                                <input type="hidden" name="dish_name" value="{{dish_instance.name}}" />
+                                <input type="hidden" name="cost" value="{{dish_instance.price}}" />
+                                {% csrf_token %}
+                                <div class="form-check">
+                                  <table>
+                                    {{form}}
+                                  </table>
+                                  {% comment %} <input class="form-check-input" type="checkbox" onclick="this.form.submit();"/> {% endcomment %}
+                                  <label class="form-check-label">
+                                    Vote
+                                  </label>
+                                </div>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                      {% endfor %}
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                      <input class="btn btn-primary" type="submit" value="Submit">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="col-sm-5 col-lg-5">chi phi</div>
+</div>
+  {% endblock %}
+</div>

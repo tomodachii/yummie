@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">Navbar</a>
+    <a class="navbar-brand" href="#">Yummie Project</a>
     <button
       class="navbar-toggler"
       type="button"
@@ -15,7 +15,7 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" href="#">Home</a>
+          <a class="nav-link" href="{% url 'poll' %}">Vote ngay</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#">Features</a>
@@ -23,17 +23,30 @@
       </ul>
       {% if user.is_authenticated %}
       <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link" href="#">{{user.get_username}}</a>
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="navbarDropdownMenuLink"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            {{user.get_username}}
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <a class="dropdown-item" href="#">Profile</a>
+            <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+          </div>
         </li>
       </ul>
       {% else %}
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link" href="#">Đăng nhập</a>
+          <a class="nav-link" href="{% url 'login' %}">Đăng nhập</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Đăng ký</a>
+          <a class="nav-link" href="{% url 'register' %}">Đăng ký</a>
         </li>
       </ul>
       {% endif %}
