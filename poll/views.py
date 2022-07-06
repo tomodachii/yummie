@@ -25,10 +25,20 @@ def index(request):
 # @login_required
 
 
+def add_item(a):
+    votes = Vote.objects.filter(menu_id=a.id)
+    return {'menu': a, 'votes': votes}
+
+
 def get_vote_view(request):
     menu = Menu.objects.all()
+    menu_list = map(add_item, menu)
+    # for menu_instance in menu:
+    #     votes = Vote.objects.filter(menu_id=menu_instance.id)
+    #     menu_instance
     return render(request, 'poll/poll.html', context={
         "menu": menu,
+        "menu_list": menu_list,
     })
 
 
@@ -115,12 +125,24 @@ class MenuCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return HttpResponseRedirect(HOME_URL)
 
 
-class MenuUpdate(UpdateView):
+class MenuUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Menu
     # Not recommended (potential security issue if more fields added)
     fields = '__all__'
 
+    def test_func(self):
+        return self.request.user.is_superuser
 
-class MenuDelete(DeleteView):
+    def handle_no_permission(self):
+        return HttpResponseRedirect(HOME_URL)
+
+
+class MenuDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Menu
     success_url = reverse_lazy('poll')
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        return HttpResponseRedirect(HOME_URL)

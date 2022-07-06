@@ -1,27 +1,31 @@
 {% extends "base_generic.html" %} {% block content %}
 
+
 <div class="row mt-3">
   <div class="col-sm-7 col-lg-7">
     {% if request.user.is_superuser %}
       <a href="{% url 'poll-create' %}" class="mb-3 btn btn-primary input-block-level btn-block">Tạo poll</a>
     {% endif %}
     <div class="list-group">
-      {% for menu_instance in menu %}
+      {% for menu_instance in menu_list %}
         <div class="list-item p-3 border mb-3">
-            <h5 class="card-title">Menu ngày {{menu_instance.due}}</h5>
+            <h5 class="card-title">Menu ngày {{menu_instance.menu.due}}</h5>
             <p class="card-text">
-              Danh sách món ăn: {{menu_instance.display_dish}}
+              Danh sách món ăn: {{menu_instance.menu.display_dish}}
             </p>
             <p class="card-text">
               <small class="text-muted"
-                >Trạng thái: {% if menu_instance.status == 'o' %}<span
+                >Trạng thái: {% if menu_instance.menu.status == 'o' %}<span
                   class="text-success"
                   >open</span
                 >{% else %}<span class="text-danger">closed</span>{% endif %}</small
               >
             </p>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#voteModal-{{menu_instance.menu.id}}">
+              Thông tin người vote
+            </button>
             {% if user.is_authenticated %}
-              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal-{{menu_instance.id}}">
+              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#foodModal-{{menu_instance.menu.id}}">
                 Chọn món ăn ngay!!
               </button>
             {% else %}
@@ -29,46 +33,40 @@
             {% endif %}
 
             {% if request.user.is_superuser %}
-              <a href="{% url 'poll-delete' pk=menu_instance.id %}" class="btn btn-danger">Xóa poll</a>
+              <a href="{% url 'poll-delete' pk=menu_instance.menu.id %}" class="btn btn-danger">Xóa poll</a>
             {% endif %}
             {% if request.user.is_superuser %}
-              <a href="{% url 'poll-update' pk=menu_instance.id %}" class="btn btn-primary">Sửa poll</a>
+              <a href="{% url 'poll-update' pk=menu_instance.menu.id %}" class="btn btn-primary">Sửa poll</a>
             {% endif %}
             
             <!-- Modal -->
             
-              <div class="modal fade" id="exampleModal-{{menu_instance.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            {% comment %} {% for key,value in menu.items %}
+            {% if value.id == 1%}
+            <p>key:{{key}}</p><br>
+            <p>value:{{value}}</p>
+            {% endif %}
+            {% endfor %} {% endcomment %}
+
+
+              <div class="modal fade" id="foodModal-{{menu_instance.menu.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h5 class="modal-title" id="exampleModalLabel">Hết hạn: {{menu_instance.due}}</h5>
+                      <h5 class="modal-title" id="exampleModalLabel">Hết hạn: {{menu_instance.menu.due}}</h5>
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                       </button>
                     </div>
                     <div class="modal-body">
                       <div class="row">
-                      {% for dish_instance in menu_instance.list_dish %}
+                      {% for dish_instance in menu_instance.menu.list_dish %}
                         <div class="col-sm-6 my-2">
                           <div class="card">
-                            <a class="btn btn-primary" href="{% url 'poll-vote' menu_id=menu_instance.id dish_id=dish_instance.id %}">
+                            <a class="btn btn-primary" href="{% url 'poll-vote' menu_id=menu_instance.menu.id dish_id=dish_instance.id %}">
                               <div class="card-body" style="cursor: pointer;">
                                 <h5 class="card-title">{{dish_instance.name}}</h5>
                                 <p class="card-text">{{dish_instance.price}}</p>
-                                {% comment %} <form action="" method="post">
-                                  <input type="hidden" name="menu_id" value="{{menu_instance.id}}" />
-                                  <input type="hidden" name="dish_name" value="{{dish_instance.name}}" />
-                                  <input type="hidden" name="cost" value="{{dish_instance.price}}" />
-                                  {% csrf_token %}
-                                  <div class="form-check">
-                                    <table>
-                                      {{form}}
-                                    </table>
-                                    <label class="form-check-label">
-                                      Vote
-                                    </label>
-                                  </div>
-                                </form> {% endcomment %}
                               </div>
                             </a>
                           </div>
@@ -76,14 +74,38 @@
                       {% endfor %}
                       </div>
                     </div>
-                    {% comment %} <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                      <input class="btn btn-primary" type="submit" value="Submit">
-                    </div> {% endcomment %}
                   </div>
                 </div>
               </div>
-            </form>
+
+              <div class="modal fade" id="voteModal-{{menu_instance.menu.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLabel">Menu: {{menu_instance.menu.due}}</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="row">
+                      {% for vote in menu_instance.votes %}
+                        <div class="col-sm-6 my-2">
+                          <div class="card">
+                            {% comment %} <a class="btn btn-primary" href="{% url 'poll-vote' menu_id=menu_instance.menu.id dish_id=dish_instance.id %}"> {% endcomment %}
+                              <div class="card-body" style="cursor: pointer;">
+                                <h5 class="card-title">{{vote.dish_name}}</h5>
+                                <p class="card-text">{{vote.user_name}}</p>
+                              </div>
+                            {% comment %} </a> {% endcomment %}
+                          </div>
+                        </div>
+                      {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
         </div>
       {% endfor %}
     </div>
