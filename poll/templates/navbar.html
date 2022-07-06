@@ -20,6 +20,11 @@
         <li class="nav-item">
           <a class="nav-link" href="#">Features</a>
         </li>
+        {% comment %} {% if request.user.is_staff %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'poll-create' %}">Tạo poll</a>
+        </li>
+        {% endif %} {% endcomment %}
       </ul>
       {% if user.is_authenticated %}
       <ul class="navbar-nav">
