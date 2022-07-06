@@ -17,10 +17,11 @@
         <li class="nav-item active">
           <a class="nav-link" href="{% url 'poll' %}">Vote ngay</a>
         </li>
+        {% comment %}
         <li class="nav-item">
           <a class="nav-link" href="#">Features</a>
         </li>
-        {% comment %} {% if request.user.is_staff %}
+        {% endcomment %} {% comment %} {% if request.user.is_staff %}
         <li class="nav-item">
           <a class="nav-link" href="{% url 'poll-create' %}">Tạo poll</a>
         </li>
