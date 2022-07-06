@@ -38,7 +38,10 @@ class Menu(models.Model):
 
     def display_dish(self):
         """Create a string for the Dish. This is required to display dish in Admin."""
-        return ', '.join(dish.name for dish in self.dish.all()[:5])
+        return ', '.join(dish.name for dish in self.dish.all())
+
+    def list_dish(self):
+        return self.dish.all()
 
     display_dish.short_description = 'dish list'
 
@@ -67,3 +70,12 @@ class Vote(models.Model):
     def __str__(self):
         """String for representing the Model object."""
         return f'{self.user_name} {self.dish_name} {self.created_at}'
+
+
+def get_user_name(self):
+    if self.first_name or self.last_name:
+        return self.first_name + " " + self.last_name
+    return self.username
+
+
+User.add_to_class("get_user_name", get_user_name)

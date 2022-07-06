@@ -3,5 +3,6 @@ from django.urls import include, path
 from . import views
 
 urlpatterns = [
-    path('', views.vote_view, name='index'),
+    path('poll/', views.get_vote_view, name='poll'),
+    path('accounts/register', views.register_request, name="register")
 ]
