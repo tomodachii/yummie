@@ -1,5 +1,12 @@
 {% extends "base_generic.html" %} {% block content %}
 
+{% comment %} <h1>{{menu_list}}</h1> {% endcomment %}
+{% comment %} {% for menu_instance in menu_list %}
+  <h1>{{menu_instance.menu.due}}</h1>
+  {% for result in menu_instance.results %}
+    <h2>{{result}}</h2>
+  {% endfor %}
+{% endfor %}  {% endcomment %}
 
 <div class="row mt-3">
   <div class="col-sm-7 col-lg-7">
@@ -11,8 +18,14 @@
         <div class="list-item p-3 border mb-3">
             <h5 class="card-title">Menu ngày {{menu_instance.menu.due}}</h5>
             <p class="card-text">
-              Danh sách món ăn: {{menu_instance.menu.display_dish}}
+              Danh sách món ăn: 
             </p>
+            {% for key, value in menu_instance.results.items %}
+              <h5>{{key}}</h5>
+              {% for item in value %}
+                <span class="text-info">{{item.user_name}}</span>
+              {% endfor %}
+            {% endfor %}
             <p class="card-text">
               <small class="text-muted"
                 >Trạng thái: {% if menu_instance.menu.status == 'o' %}<span
@@ -101,6 +114,9 @@
                           </div>
                         </div>
                       {% endfor %}
+                      </div>
+                      <div class="w-full text-center mt-2">
+                        <a href="{% url 'poll-detail' pk=menu_instance.menu.id %}" class="btn btn-primary">Thông tin chi tiết</a>
                       </div>
                     </div>
                   </div>

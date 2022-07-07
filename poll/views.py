@@ -11,6 +11,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 import datetime
 from django.views import generic
+from django.db.models.query import QuerySet
 
 
 # Create your views here.
@@ -20,27 +21,26 @@ from django.views import generic
 HOME_URL = '/poll/'
 DISH_LIST_URL = '/dishes/'
 
-
-def index(request):
-    context = {'hello': 'hello'}
-    return render(request, 'index.html', context=context)
-
 # @login_required
 
 
-def add_item(a):
-    votes = Vote.objects.filter(menu_id=a.id)
-    return {'menu': a, 'votes': votes}
+def add_votes_info_to_poll(menu):
+    results = {}
+    votes = Vote.objects.filter(menu_id=menu.id)
+    for item in menu.list_dish():
+        arr = []
+        # temp = {item.name: arr}
+        for vote in votes:
+            if item.name == vote.dish_name:
+                arr.append(vote)
+        results[item.name] = arr
+    return {'menu': menu, 'votes': votes, 'results': results}
 
 
 def get_vote_view(request):
-    menu = Menu.objects.all()
-    menu_list = map(add_item, menu)
-    # for menu_instance in menu:
-    #     votes = Vote.objects.filter(menu_id=menu_instance.id)
-    #     menu_instance
+    menu_list = Menu.objects.all()
+    menu_list = map(add_votes_info_to_poll, menu_list)
     return render(request, 'poll/poll.html', context={
-        "menu": menu,
         "menu_list": menu_list,
     })
 
@@ -78,28 +78,6 @@ def make_vote(request, menu_id, dish_id):
     except Exception as e:
         print(e)
         return HttpResponseRedirect(HOME_URL)
-
-
-# @login_required
-# @user_passes_test(lambda u: u.is_superuser)
-# def create_poll(request):
-#     try:
-#         if request.method == 'POST':
-#             form = NewVoteForm(request.POST)
-#             if form.is_valid():
-#                 messages.success(request, 'Poll has successful created!')
-#                 return HttpResponseRedirect(HOME_URL)
-#             else:
-#                 messages.warning(request, 'Please correct the error below.')
-#         else:
-#             form = NewVoteForm()
-
-#         return render(request, 'poll/create_poll.html', context={
-
-#         })
-#     except Exception as e:
-#         print(e)
-#         return HttpResponseRedirect(HOME_URL)
 
 
 def register_request(request):
@@ -191,3 +169,12 @@ class DishListView(generic.ListView):
 
 class DishDetailView(generic.DetailView):
     model = Dish
+
+
+def poll_detail_view(request, pk):
+    menu = Menu.objects.get(pk=pk)
+    votes = Vote.objects.filter(menu_id=pk)
+    return render(request, 'poll/poll_detail.html', context={
+        "menu": menu,
+        "votes": votes,
+    })
