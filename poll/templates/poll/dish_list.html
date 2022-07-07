@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %} {% block content %}
+<h1>Danh sách món ăn</h1>
+{% if dish_list %}
+<ul>
+  {% for dish in dish_list %}
+  <li>
+    <a href="{{ dish.get_absolute_url }}">{{ dish.name }}</a> ({{dish.price}},
+    {{dish.type}})
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>There are no books in the library.</p>
+{% endif %} {% endblock %}
