@@ -11,6 +11,7 @@ urlpatterns = [
     path('poll/create/', views.MenuCreate.as_view(), name='poll-create'),
     path('poll/<int:pk>/update/', views.MenuUpdate.as_view(), name='poll-update'),
     path('poll/<int:pk>/delete/', views.MenuDelete.as_view(), name='poll-delete'),
+    path('poll/<int:pk>/', views.poll_detail_view, name='poll-detail'),
     path('dishes/', views.DishListView.as_view(), name='dishes'),
     path('dish/<int:pk>', views.DishDetailView.as_view(), name='dish-detail'),
     path('dish/create/', views.DishCreate.as_view(), name='dish-create'),
