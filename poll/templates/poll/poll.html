@@ -22,21 +22,21 @@
               >
             </p>
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#voteModal-{{menu_instance.menu.id}}">
-              Thông tin người vote
+              <a data-toggle="tooltip" data-placement="top" title="Tooltip on top">Thông tin người vote</a>
             </button>
             {% if user.is_authenticated %}
               <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#foodModal-{{menu_instance.menu.id}}">
-                Chọn món ăn ngay!!
+                <a data-toggle="tooltip" data-placement="top" title="Tooltip on top">Chọn món ăn ngay!!</a>
               </button>
             {% else %}
               <a class="btn btn-primary" href="{% url 'login' %}" class="text-info">Đăng nhập để vote</a>
             {% endif %}
 
             {% if request.user.is_superuser %}
-              <a href="{% url 'poll-delete' pk=menu_instance.menu.id %}" class="btn btn-danger">Xóa poll</a>
+              <a href="{% url 'poll-delete' pk=menu_instance.menu.id %}" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Tooltip on top">Xóa poll</a>
             {% endif %}
             {% if request.user.is_superuser %}
-              <a href="{% url 'poll-update' pk=menu_instance.menu.id %}" class="btn btn-primary">Sửa poll</a>
+              <a href="{% url 'poll-update' pk=menu_instance.menu.id %}" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Tooltip on top">Sửa poll</a>
             {% endif %}
             
             <!-- Modal -->

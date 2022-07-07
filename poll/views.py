@@ -10,12 +10,15 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 import datetime
+from django.views import generic
+
 
 # Create your views here.
 # def store_vote(request):
 #   new_vote = UserVote.objects.create(user=request.user, user_name=request.user.username)
 
 HOME_URL = '/poll/'
+DISH_LIST_URL = '/dishes/'
 
 
 def index(request):
@@ -146,3 +149,45 @@ class MenuDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def handle_no_permission(self):
         return HttpResponseRedirect(HOME_URL)
+
+
+class DishCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = Dish
+    fields = ['name', 'price', 'type']
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        return HttpResponseRedirect(HOME_URL)
+
+
+class DishUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Dish
+    # Not recommended (potential security issue if more fields added)
+    fields = '__all__'
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        return HttpResponseRedirect(HOME_URL)
+
+
+class DishDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Dish
+    success_url = reverse_lazy(DISH_LIST_URL)
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        return HttpResponseRedirect(HOME_URL)
+
+
+class DishListView(generic.ListView):
+    model = Dish
+
+
+class DishDetailView(generic.DetailView):
+    model = Dish

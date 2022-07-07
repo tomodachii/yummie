@@ -23,6 +23,10 @@ class Dish(models.Model):
         """String for representing the Model object."""
         return f'{self.name} {self.type} {self.price}'
 
+    def get_absolute_url(self):
+        """Returns the URL to access a particular author instance."""
+        return reverse('dish-detail', args=[str(self.id)])
+
 
 class Menu(models.Model):
     dish = models.ManyToManyField(
