@@ -23,7 +23,7 @@
             {% for key, value in menu_instance.results.items %}
               <h5>{{key}}</h5>
               {% for item in value %}
-                <span class="text-info">{{item.user_name}}</span>
+                <a href="{% url 'vote-detail' pk=item.id %}"><span class="text-info">{{item.user_name}}</span></a>
               {% endfor %}
             {% endfor %}
             <p class="card-text">

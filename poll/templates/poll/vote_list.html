@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %} {% block content %}
+<h1>Danh sách vote</h1>
+{% if vote_list %}
+<ul>
+  {% for vote in vote_list %}
+  <li>
+    <a href="{{ vote.get_absolute_url }}">{{ vote.user_name }}</a>
+    ({{vote.dish_name}}, {{vote.cost}})
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>There are no books in the library.</p>
+{% endif %} {% endblock %}

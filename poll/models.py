@@ -55,8 +55,7 @@ class Menu(models.Model):
 
     def get_absolute_url(self):
         """Returns the URL to access a particular author instance."""
-        # return reverse('author-detail', args=[str(self.id)])
-        return reverse('poll')
+        return reverse('poll-detail', args=[str(self.id)])
 
     class Meta:
         ordering = ['due']
@@ -75,6 +74,10 @@ class Vote(models.Model):
     cost = models.DecimalField(max_digits=20, decimal_places=2)
     vote_as = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField()
+
+    def get_absolute_url(self):
+        """Returns the URL to access a particular author instance."""
+        return reverse('vote-detail', args=[str(self.id)])
 
     class Meta:
         ordering = ['user_name', 'dish_name']
