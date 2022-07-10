@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect
 from .models import Dish, Menu, Vote
 from django.contrib.auth.models import User
@@ -43,41 +43,6 @@ def get_vote_view(request):
     return render(request, 'poll/poll.html', context={
         "menu_list": menu_list,
     })
-
-
-@login_required
-def make_vote(request, menu_id, dish_id):
-    menu = Menu.objects.get(pk=menu_id)
-    dish = Dish.objects.get(pk=dish_id)
-    user = request.user
-    message = ''
-    try:
-        if request.method == 'POST':
-            form = NewVoteForm(request.POST)
-            if form.is_valid():
-                if request.POST.get('vote') == 'on':
-                    Vote.objects.create(
-                        user_id=user.id, menu_id=menu.id, user_name=user.get_user_name(), dish_name=dish.name, cost=dish.price, created_at=datetime.datetime.now())
-                    messages.success(
-                        request, 'Vote has been successful created!')
-                else:
-                    message = 'Vote has been canceled!'
-                return HttpResponseRedirect(HOME_URL)
-            else:
-                messages.warning(request, 'Please correct the error below.')
-        else:
-            form = NewVoteForm()
-
-        return render(request, 'poll/vote.html', context={
-            'form': form,
-            'menu': menu,
-            'dish': dish,
-            'message': message,
-        })
-
-    except Exception as e:
-        print(e)
-        return HttpResponseRedirect(HOME_URL)
 
 
 def register_request(request):
@@ -154,7 +119,7 @@ class DishUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class DishDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Dish
-    success_url = reverse_lazy(DISH_LIST_URL)
+    success_url = reverse_lazy('dishes')
 
     def test_func(self):
         return self.request.user.is_superuser
@@ -178,3 +143,75 @@ def poll_detail_view(request, pk):
         "menu": menu,
         "votes": votes,
     })
+
+
+class VoteDetailView(generic.DetailView):
+    model = Vote
+
+
+class VoteListView(generic.ListView):
+    model = Vote
+
+
+@login_required
+def make_vote(request, menu_id, dish_id):
+    menu = Menu.objects.get(pk=menu_id)
+    dish = Dish.objects.get(pk=dish_id)
+    user = request.user
+    message = ''
+    try:
+        if request.method == 'POST':
+            form = NewVoteForm(request.POST)
+            if form.is_valid():
+                if request.POST.get('vote') == 'on':
+                    Vote.objects.create(
+                        user_id=user.id, menu_id=menu.id, user_name=user.get_user_name(), dish_name=dish.name, cost=dish.price, created_at=datetime.datetime.now())
+                    messages.success(
+                        request, 'Vote has been successful created!')
+                else:
+                    message = 'Vote has been canceled!'
+                return HttpResponseRedirect(HOME_URL)
+            else:
+                messages.warning(request, 'Please correct the error below.')
+        else:
+            form = NewVoteForm()
+
+        return render(request, 'poll/vote.html', context={
+            'form': form,
+            'menu': menu,
+            'dish': dish,
+            'message': message,
+        })
+
+    except Exception as e:
+        print(e)
+        return HttpResponseRedirect(HOME_URL)
+
+
+class VoteUpdate(LoginRequiredMixin, UpdateView):
+    model = Vote
+    # Not recommended (potential security issue if more fields added)
+    fields = '__all__'
+
+    def get_object(self, *args, **kwargs):
+        obj = super(VoteUpdate, self).get_object(*args, **kwargs)
+        if not self.request.user.is_superuser and not obj.user == self.request.user:
+            raise Http404  # maybe you'll need to write a middleware to catch 403's same way
+        return obj
+
+    def handle_no_permission(self):
+        return HttpResponseRedirect(HOME_URL)
+
+
+class VoteDelete(LoginRequiredMixin, DeleteView):
+    model = Vote
+    success_url = reverse_lazy('poll')
+
+    def get_object(self, *args, **kwargs):
+        obj = super(VoteDelete, self).get_object(*args, **kwargs)
+        if not self.request.user.is_superuser and not obj.user == self.request.user:
+            raise Http404  # maybe you'll need to write a middleware to catch 403's same way
+        return obj
+
+    def handle_no_permission(self):
+        return HttpResponseRedirect(HOME_URL)

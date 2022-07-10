@@ -1,0 +1,10 @@
+{% extends "base_generic.html" %} {% block content %}
+<h1>{{ vote.created_at }}</h1>
+<h2>{{vote.menu.due}}</h2>
+<h2>user {{vote.user_name}}</h2>
+<h2>{{vote.dish_name}}</h2>
+<p>user_id: {{vote.user.id}}</p>
+<a href="{% url 'vote-update' pk=vote.id %}" class="btn btn-primary">Update</a>
+<a href="{% url 'vote-delete' pk=vote.id %}" class="btn btn-danger">Delete</a>
+
+{% endblock %}
