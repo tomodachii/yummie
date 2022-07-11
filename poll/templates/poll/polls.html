@@ -51,6 +51,7 @@
             {% if request.user.is_superuser %}
               <a href="{% url 'poll-update' pk=menu_instance.menu.id %}" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Tooltip on top">Sửa poll</a>
             {% endif %}
+            
               <div class="modal fade" id="foodModal-{{menu_instance.menu.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
