@@ -3,7 +3,8 @@ from django.urls import include, path
 from . import views
 
 urlpatterns = [
-    path('poll/', views.get_vote_view, name='poll'),
+    path('', views.get_index, name='index'),
+    path('polls/<int:page>', views.get_vote_view, name='polls'),
     path('accounts/register', views.register_request, name="register"),
     path('poll/<int:menu_id>/<int:dish_id>/vote',
          views.make_vote, name='poll-vote'),

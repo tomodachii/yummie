@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect
 from .models import Dish, Menu, Vote
 from django.contrib.auth.models import User
-from .forms import NewUserForm, NewVoteForm
+from .forms import MenuForm, NewUserForm, NewVoteForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -12,13 +12,14 @@ from django.urls import reverse_lazy
 import datetime
 from django.views import generic
 from django.db.models.query import QuerySet
+from django.core.paginator import Paginator, EmptyPage
 
 
 # Create your views here.
 # def store_vote(request):
 #   new_vote = UserVote.objects.create(user=request.user, user_name=request.user.username)
 
-HOME_URL = '/poll/'
+HOME_URL = '/polls/1'
 DISH_LIST_URL = '/dishes/'
 
 # @login_required
@@ -37,10 +38,31 @@ def add_votes_info_to_poll(menu):
     return {'menu': menu, 'votes': votes, 'results': results}
 
 
-def get_vote_view(request):
+def get_index(request):
+    today_min = datetime.datetime.combine(
+        datetime.date.today(), datetime.time.min)
+    today_max = datetime.datetime.combine(
+        datetime.date.today(), datetime.time.max)
+
+    try:
+        menu_list = Menu.objects.filter(due__range=(today_min, today_max))
+    except Menu.DoesNotExist:
+        menu_list = None
+    return render(request, 'index.html', context={
+        "menu_list": menu_list,
+    })
+
+
+def get_vote_view(request, page=1):
     menu_list = Menu.objects.all()
     menu_list = map(add_votes_info_to_poll, menu_list)
-    return render(request, 'poll/poll.html', context={
+    paginator = Paginator(list(menu_list), 1)
+    try:
+        menu_list = paginator.page(page)
+    except EmptyPage:
+        # if we exceed the page limit we return the last page
+        menu_list = paginator.page(paginator.num_pages)
+    return render(request, 'poll/polls.html', context={
         "menu_list": menu_list,
     })
 
@@ -61,7 +83,8 @@ def register_request(request):
 
 class MenuCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Menu
-    fields = ['dish', 'due', 'status']
+    form_class = MenuForm
+    # fields = ['dish', 'due', 'status']
     initial = {'status': 'o'}
 
     def test_func(self):
@@ -73,8 +96,9 @@ class MenuCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
 class MenuUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Menu
+    form_class = MenuForm
     # Not recommended (potential security issue if more fields added)
-    fields = '__all__'
+    # fields = '__all__'
 
     def test_func(self):
         return self.request.user.is_superuser
@@ -85,7 +109,7 @@ class MenuUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class MenuDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Menu
-    success_url = reverse_lazy('poll')
+    success_url = reverse_lazy('polls', args=[1])
 
     def test_func(self):
         return self.request.user.is_superuser
@@ -213,7 +237,7 @@ class VoteUpdate(LoginRequiredMixin, UpdateView):
 
 class VoteDelete(LoginRequiredMixin, DeleteView):
     model = Vote
-    success_url = reverse_lazy('poll')
+    success_url = reverse_lazy('polls', args=[1])
     template_name = 'vote/vote_confirm_delete.html'
 
     def get_object(self, *args, **kwargs):
@@ -252,7 +276,7 @@ class UserUpdate(LoginRequiredMixin, UpdateView):
 
 class UserDelete(LoginRequiredMixin, DeleteView):
     model = User
-    success_url = reverse_lazy('poll')
+    success_url = reverse_lazy('polls', args=[1])
     template_name = 'auth/user_confirm_delete.html'
 
     def get_object(self, *args, **kwargs):

@@ -51,17 +51,6 @@
             {% if request.user.is_superuser %}
               <a href="{% url 'poll-update' pk=menu_instance.menu.id %}" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Tooltip on top">Sửa poll</a>
             {% endif %}
-            
-            <!-- Modal -->
-            
-            {% comment %} {% for key,value in menu.items %}
-            {% if value.id == 1%}
-            <p>key:{{key}}</p><br>
-            <p>value:{{value}}</p>
-            {% endif %}
-            {% endfor %} {% endcomment %}
-
-
               <div class="modal fade" id="foodModal-{{menu_instance.menu.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
@@ -127,6 +116,19 @@
     </div>
   </div>
   <div class="col-sm-5 col-lg-5">chi phi</div>
+  <div class='pagination justify-content-center'>
+    {% if menu_list.has_previous %}
+      <a href='{% url "polls" menu_list.previous_page_number %}'>Previous </a>
+    {% endif %}
+
+    <span class='mx-4'>
+      Page {{ menu_list.number }} of {{ menu_list.paginator.num_pages }}
+    </span>
+
+    {% if menu_list.has_next %}
+      <a href='{% url "polls" menu_list.next_page_number %}' > Next</a>
+    {% endif %}
+  </div>
 </div>
   {% endblock %}
 </div>

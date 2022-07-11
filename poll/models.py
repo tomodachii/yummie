@@ -3,7 +3,7 @@ from django.urls import reverse
 import uuid  # Required for unique book instances
 from django.db import models
 from django.contrib.auth.models import User
-from datetime import date
+import datetime
 
 
 class Dish(models.Model):
@@ -49,6 +49,14 @@ class Menu(models.Model):
 
     display_dish.short_description = 'dish list'
 
+    def finalize(self):
+        if self.status == 'o':
+            self.status = 'c'
+
+    def unfinalize(self):
+        if self.status == 'c':
+            self.status = 'o'
+
     def __str__(self):
         """String for representing the Model object."""
         return f'{self.due}'
@@ -58,7 +66,7 @@ class Menu(models.Model):
         return reverse('poll-detail', args=[str(self.id)])
 
     class Meta:
-        ordering = ['due']
+        ordering = ['-due']
 
 
 class Vote(models.Model):
