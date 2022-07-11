@@ -1,0 +1,13 @@
+{% extends "base_generic.html" %} {% block content %}
+<h1>Danh sách user</h1>
+{% if user_list %}
+<ul>
+  {% for user in user_list %}
+  <a href="{{user.get_absolute_url}}">
+    <li>{{user.get_user_name}}</li>
+  </a>
+  {% endfor %}
+</ul>
+{% else %}
+<p>There are no books in the library.</p>
+{% endif %} {% endblock %}

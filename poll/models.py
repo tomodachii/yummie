@@ -92,5 +92,11 @@ def get_user_name(self):
         return self.first_name + " " + self.last_name
     return self.username
 
+# def get_absolute_url(self):
+#         """Returns the URL to access a particular author instance."""
+#         return reverse('poll-detail', args=[str(self.id)])
+
 
 User.add_to_class("get_user_name", get_user_name)
+User.add_to_class("get_absolute_url", lambda self: reverse(
+    'user-detail', args=[str(self.id)]))

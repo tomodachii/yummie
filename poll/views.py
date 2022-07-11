@@ -97,6 +97,7 @@ class MenuDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 class DishCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Dish
     fields = ['name', 'price', 'type']
+    template_name = 'dish/dish_form.html'
 
     def test_func(self):
         return self.request.user.is_superuser
@@ -109,6 +110,7 @@ class DishUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Dish
     # Not recommended (potential security issue if more fields added)
     fields = '__all__'
+    template_name = 'dish/dish_form.html'
 
     def test_func(self):
         return self.request.user.is_superuser
@@ -120,6 +122,7 @@ class DishUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 class DishDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Dish
     success_url = reverse_lazy('dishes')
+    template_name = 'dish/dish_confirm_delete.html'
 
     def test_func(self):
         return self.request.user.is_superuser
@@ -129,10 +132,12 @@ class DishDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 
 class DishListView(generic.ListView):
+    template_name = 'dish/dish_list.html'
     model = Dish
 
 
 class DishDetailView(generic.DetailView):
+    template_name = 'dish/dish_detail.html'
     model = Dish
 
 
@@ -146,10 +151,12 @@ def poll_detail_view(request, pk):
 
 
 class VoteDetailView(generic.DetailView):
+    template_name = 'vote/vote_detail.html'
     model = Vote
 
 
 class VoteListView(generic.ListView):
+    template_name = 'vote/vote_list.html'
     model = Vote
 
 
@@ -176,7 +183,7 @@ def make_vote(request, menu_id, dish_id):
         else:
             form = NewVoteForm()
 
-        return render(request, 'poll/vote.html', context={
+        return render(request, 'vote/vote_create.html', context={
             'form': form,
             'menu': menu,
             'dish': dish,
@@ -192,6 +199,7 @@ class VoteUpdate(LoginRequiredMixin, UpdateView):
     model = Vote
     # Not recommended (potential security issue if more fields added)
     fields = '__all__'
+    template_name = 'vote/vote_form.html'
 
     def get_object(self, *args, **kwargs):
         obj = super(VoteUpdate, self).get_object(*args, **kwargs)
@@ -206,9 +214,49 @@ class VoteUpdate(LoginRequiredMixin, UpdateView):
 class VoteDelete(LoginRequiredMixin, DeleteView):
     model = Vote
     success_url = reverse_lazy('poll')
+    template_name = 'vote/vote_confirm_delete.html'
 
     def get_object(self, *args, **kwargs):
         obj = super(VoteDelete, self).get_object(*args, **kwargs)
+        if not self.request.user.is_superuser and not obj.user == self.request.user:
+            raise Http404  # maybe you'll need to write a middleware to catch 403's same way
+        return obj
+
+    def handle_no_permission(self):
+        return HttpResponseRedirect(HOME_URL)
+
+
+class UserListView(generic.ListView):
+    model = User
+
+
+class UserDetailView(generic.DetailView):
+    model = User
+
+
+class UserUpdate(LoginRequiredMixin, UpdateView):
+    model = User
+    # Not recommended (potential security issue if more fields added)
+    fields = '__all__'
+    template_name = 'auth/user_form.html'
+
+    def get_object(self, *args, **kwargs):
+        obj = super(UserUpdate, self).get_object(*args, **kwargs)
+        if not self.request.user.is_superuser and not obj.user == self.request.user:
+            raise Http404  # maybe you'll need to write a middleware to catch 403's same way
+        return obj
+
+    def handle_no_permission(self):
+        return HttpResponseRedirect(HOME_URL)
+
+
+class UserDelete(LoginRequiredMixin, DeleteView):
+    model = User
+    success_url = reverse_lazy('poll')
+    template_name = 'auth/user_confirm_delete.html'
+
+    def get_object(self, *args, **kwargs):
+        obj = super(UserDelete, self).get_object(*args, **kwargs)
         if not self.request.user.is_superuser and not obj.user == self.request.user:
             raise Http404  # maybe you'll need to write a middleware to catch 403's same way
         return obj
