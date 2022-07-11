@@ -20,5 +20,8 @@ urlpatterns = [
     path('vote/<int:pk>/', views.VoteDetailView.as_view(), name="vote-detail"),
     path('vote/<int:pk>/update/', views.VoteUpdate.as_view(), name='vote-update'),
     path('vote/<int:pk>/delete/', views.VoteDelete.as_view(), name='vote-delete'),
-
+    path('users/', views.UserListView.as_view(), name='users'),
+    path('user/<int:pk>/', views.UserDetailView.as_view(), name='user-detail'),
+    path('user/<int:pk>/update/', views.UserUpdate.as_view(), name='user-update'),
+    path('user/<int:pk>/delete/', views.UserDelete.as_view(), name='user-delete'),
 ]
