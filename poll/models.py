@@ -33,13 +33,6 @@ class Menu(models.Model):
         Dish, help_text="Select dish for this Menu")
     due = models.DateTimeField()
 
-    STATUS_LIST = (
-        ('o', 'open'),
-        ('c', 'close'),
-    )
-    status = models.CharField(
-        max_length=1, choices=STATUS_LIST, blank=False, default='o', help_text='Status')
-
     def display_dish(self):
         """Create a string for the Dish. This is required to display dish in Admin."""
         return ', '.join(dish.name for dish in self.dish.all())
@@ -48,14 +41,6 @@ class Menu(models.Model):
         return self.dish.all()
 
     display_dish.short_description = 'dish list'
-
-    def finalize(self):
-        if self.status == 'o':
-            self.status = 'c'
-
-    def unfinalize(self):
-        if self.status == 'c':
-            self.status = 'o'
 
     def __str__(self):
         """String for representing the Model object."""
@@ -99,10 +84,6 @@ def get_user_name(self):
     if self.first_name or self.last_name:
         return self.first_name + " " + self.last_name
     return self.username
-
-# def get_absolute_url(self):
-#         """Returns the URL to access a particular author instance."""
-#         return reverse('poll-detail', args=[str(self.id)])
 
 
 User.add_to_class("get_user_name", get_user_name)

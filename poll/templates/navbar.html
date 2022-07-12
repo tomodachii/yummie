@@ -21,9 +21,12 @@
         <li class="nav-item">
           <a class="nav-link" href="{% url 'dishes'%}">Món ăn</a>
         </li>
-        {% if request.user.is_staff %}
         <li class="nav-item">
           <a class="nav-link" href="{% url 'users' %}">Danh sách nhân viên</a>
+        </li>
+        {% if request.user.is_staff %}
+        <li class="nav-item">
+          <a class="nav-link" href="#">Quản lý tiền ăn</a>
         </li>
         {% endif %}
       </ul>
@@ -41,7 +44,7 @@
             {{user.get_username}}
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-            <a class="dropdown-item" href="#">Profile</a>
+            <a class="dropdown-item" href="{% url "user-detail" pk=request.user.id%}">Profile</a>
             <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
           </div>
         </li>

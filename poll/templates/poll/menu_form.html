@@ -1,6 +1,6 @@
 {% extends "base_generic.html" %} {% block content %}
 <form action="" method="post">
-  {% csrf_token %} {{form.dish}} {{form.due}} {{form.status}}
+  {% csrf_token %} {{form.dish}} {{form.due}}
   <input type="submit" value="Submit" />
 </form>
 {% endblock %}

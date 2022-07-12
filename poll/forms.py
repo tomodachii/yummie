@@ -68,7 +68,7 @@ class MenuForm(ModelForm):
 
     class Meta:
         model = Menu
-        fields = ['dish', 'due', 'status']
+        fields = ['dish', 'due']
         widgets = {
             'due': forms.TextInput(
                 attrs={

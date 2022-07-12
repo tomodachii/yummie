@@ -12,7 +12,7 @@ admin.site.register(Dish, DishAdmin)
 
 @admin.register(Menu)
 class MenuAdmin(admin.ModelAdmin):
-    list_display = ['due', 'display_dish', 'status']
+    list_display = ['due', 'display_dish']
 
 
 admin.site.register(Vote)
