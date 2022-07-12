@@ -1,8 +1,9 @@
+from django.conf import settings
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect
 from .models import Dish, Menu, Vote
 from django.contrib.auth.models import User
-from .forms import NewUserForm, NewVoteForm
+from .forms import MenuForm, NewUserForm, NewVoteForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -11,14 +12,30 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 import datetime
 from django.views import generic
-from django.db.models.query import QuerySet
+from django.core.paginator import Paginator, EmptyPage
+import pytz
+from django.utils import timezone
 
+
+def total_seconds(td):
+    # Keep backward compatibility with Python 2.6 which doesn't have
+    # this method
+    if hasattr(td, 'total_seconds'):
+        return td.total_seconds()
+    else:
+        return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
+
+
+def convert_to_localtime(utc_time):
+    utc = utc_time.replace(tzinfo=pytz.UTC)
+    return utc.astimezone(timezone.get_current_timezone())
 
 # Create your views here.
 # def store_vote(request):
 #   new_vote = UserVote.objects.create(user=request.user, user_name=request.user.username)
 
-HOME_URL = '/poll/'
+
+HOME_URL = '/'
 DISH_LIST_URL = '/dishes/'
 
 # @login_required
@@ -29,7 +46,6 @@ def add_votes_info_to_poll(menu):
     votes = Vote.objects.filter(menu_id=menu.id)
     for item in menu.list_dish():
         arr = []
-        # temp = {item.name: arr}
         for vote in votes:
             if item.name == vote.dish_name:
                 arr.append(vote)
@@ -37,10 +53,40 @@ def add_votes_info_to_poll(menu):
     return {'menu': menu, 'votes': votes, 'results': results}
 
 
-def get_vote_view(request):
+def get_index(request):
+    today_min = datetime.datetime.combine(
+        datetime.date.today(), datetime.time.min)
+    today_max = datetime.datetime.combine(
+        datetime.date.today(), datetime.time.max)
+    this_month = datetime.datetime.now().month
+
+    try:
+        menu_list = Menu.objects.filter(due__range=(today_min, today_max))
+        menu_list = map(add_votes_info_to_poll, menu_list)
+        user_votes = Vote.objects.filter(user_id=request.user.id)
+        user_total_cost = 0
+        for vote in user_votes:
+            user_total_cost += vote.cost
+    except Menu.DoesNotExist:
+        menu_list = None
+    return render(request, 'index.html', context={
+        "menu_list": menu_list,
+        "user_votes": user_votes,
+        "this_month": this_month,
+        "user_total_cost": user_total_cost,
+    })
+
+
+def get_vote_view(request, page=1):
     menu_list = Menu.objects.all()
     menu_list = map(add_votes_info_to_poll, menu_list)
-    return render(request, 'poll/poll.html', context={
+    paginator = Paginator(list(menu_list), 1)
+    try:
+        menu_list = paginator.page(page)
+    except EmptyPage:
+        # if we exceed the page limit we return the last page
+        menu_list = paginator.page(paginator.num_pages)
+    return render(request, 'poll/polls.html', context={
         "menu_list": menu_list,
     })
 
@@ -61,8 +107,7 @@ def register_request(request):
 
 class MenuCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Menu
-    fields = ['dish', 'due', 'status']
-    initial = {'status': 'o'}
+    form_class = MenuForm
 
     def test_func(self):
         return self.request.user.is_superuser
@@ -73,8 +118,9 @@ class MenuCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
 class MenuUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Menu
+    form_class = MenuForm
     # Not recommended (potential security issue if more fields added)
-    fields = '__all__'
+    # fields = '__all__'
 
     def test_func(self):
         return self.request.user.is_superuser
@@ -85,7 +131,7 @@ class MenuUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class MenuDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Menu
-    success_url = reverse_lazy('poll')
+    success_url = reverse_lazy('polls', args=[1])
 
     def test_func(self):
         return self.request.user.is_superuser
@@ -165,12 +211,18 @@ def make_vote(request, menu_id, dish_id):
     menu = Menu.objects.get(pk=menu_id)
     dish = Dish.objects.get(pk=dish_id)
     user = request.user
-    message = ''
+    message, due, time, temp = '', '', '', 0
+    if (menu):
+        due = convert_to_localtime(menu.due).replace(tzinfo=None)
+        time = datetime.datetime.now().replace(tzinfo=None)
+        temp = due - time
+        temp = total_seconds(temp)
+    print(temp)
     try:
         if request.method == 'POST':
             form = NewVoteForm(request.POST)
             if form.is_valid():
-                if request.POST.get('vote') == 'on':
+                if request.POST.get('vote') == 'on' and temp > 0:
                     Vote.objects.create(
                         user_id=user.id, menu_id=menu.id, user_name=user.get_user_name(), dish_name=dish.name, cost=dish.price, created_at=datetime.datetime.now())
                     messages.success(
@@ -213,7 +265,7 @@ class VoteUpdate(LoginRequiredMixin, UpdateView):
 
 class VoteDelete(LoginRequiredMixin, DeleteView):
     model = Vote
-    success_url = reverse_lazy('poll')
+    success_url = reverse_lazy('polls', args=[1])
     template_name = 'vote/vote_confirm_delete.html'
 
     def get_object(self, *args, **kwargs):
@@ -252,7 +304,7 @@ class UserUpdate(LoginRequiredMixin, UpdateView):
 
 class UserDelete(LoginRequiredMixin, DeleteView):
     model = User
-    success_url = reverse_lazy('poll')
+    success_url = reverse_lazy('polls', args=[1])
     template_name = 'auth/user_confirm_delete.html'
 
     def get_object(self, *args, **kwargs):

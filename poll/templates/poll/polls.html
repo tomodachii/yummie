@@ -1,13 +1,5 @@
 {% extends "base_generic.html" %} {% block content %}
 
-{% comment %} <h1>{{menu_list}}</h1> {% endcomment %}
-{% comment %} {% for menu_instance in menu_list %}
-  <h1>{{menu_instance.menu.due}}</h1>
-  {% for result in menu_instance.results %}
-    <h2>{{result}}</h2>
-  {% endfor %}
-{% endfor %}  {% endcomment %}
-
 <div class="row mt-3">
   <div class="col-sm-7 col-lg-7">
     {% if request.user.is_superuser %}
@@ -16,7 +8,11 @@
     <div class="list-group">
       {% for menu_instance in menu_list %}
         <div class="list-item p-3 border mb-3">
-            <h5 class="card-title">Menu ngày {{menu_instance.menu.due}}</h5>
+            <h5 class="card-title">Menu ngày {{menu_instance.menu.due|date:'d/m/Y, H:i'}}</h5>
+            <div class="d-flex flex-row align-items-center">
+              <h5>Time left:</h5>
+              <h5 class="pl-2" id="demo"></h5>
+            </div>
             <p class="card-text">
               Danh sách món ăn: 
             </p>
@@ -28,40 +24,31 @@
             {% endfor %}
             <p class="card-text">
               <small class="text-muted"
-                >Trạng thái: {% if menu_instance.menu.status == 'o' %}<span
+                >Trạng thái: <span
+                  id="status"
                   class="text-success"
                   >open</span
-                >{% else %}<span class="text-danger">closed</span>{% endif %}</small
+                ></small
               >
             </p>
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#voteModal-{{menu_instance.menu.id}}">
-              <a data-toggle="tooltip" data-placement="top" title="Tooltip on top">Thông tin người vote</a>
+              Thông tin người vote
             </button>
             {% if user.is_authenticated %}
-              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#foodModal-{{menu_instance.menu.id}}">
-                <a data-toggle="tooltip" data-placement="top" title="Tooltip on top">Chọn món ăn ngay!!</a>
+              <button id="dish-select-btn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#foodModal-{{menu_instance.menu.id}}">
+                Chọn món ăn ngay!!
               </button>
             {% else %}
               <a class="btn btn-primary" href="{% url 'login' %}" class="text-info">Đăng nhập để vote</a>
             {% endif %}
 
             {% if request.user.is_superuser %}
-              <a href="{% url 'poll-delete' pk=menu_instance.menu.id %}" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Tooltip on top">Xóa poll</a>
+              <a href="{% url 'poll-delete' pk=menu_instance.menu.id %}" class="btn btn-danger">Xóa poll</a>
             {% endif %}
             {% if request.user.is_superuser %}
-              <a href="{% url 'poll-update' pk=menu_instance.menu.id %}" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Tooltip on top">Sửa poll</a>
+              <a href="{% url 'poll-update' pk=menu_instance.menu.id %}" class="btn btn-primary">Sửa poll</a>
             {% endif %}
             
-            <!-- Modal -->
-            
-            {% comment %} {% for key,value in menu.items %}
-            {% if value.id == 1%}
-            <p>key:{{key}}</p><br>
-            <p>value:{{value}}</p>
-            {% endif %}
-            {% endfor %} {% endcomment %}
-
-
               <div class="modal fade" id="foodModal-{{menu_instance.menu.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
@@ -123,10 +110,56 @@
                 </div>
               </div>
         </div>
+        <script>
+          function makeTimer() {
+            let endTime=new Date({{ menu_instance.menu.due|date:"U" }} * 1000);
+            endTime = (Date.parse(endTime) / 1000);
+            let now = new Date();
+            now = (Date.parse(now) / 1000);
+    
+            let timeLeft = endTime - now;
+    
+            let days = Math.floor(timeLeft / 86400);
+            let hours = Math.floor((timeLeft - (days * 86400)) / 3600);
+            let minutes = Math.floor((timeLeft - (days * 86400) - (hours * 3600 )) / 60);
+            let seconds = Math.floor((timeLeft - (days * 86400) - (hours * 3600) - (minutes * 60)));
+    
+            if (hours < "10") { hours = "0" + hours; }
+            if (minutes < "10") { minutes = "0" + minutes; }
+            if (seconds < "10") { seconds = "0" + seconds; }
+    
+            document.getElementById("demo").innerHTML = days + "d " + hours + "h " +
+              minutes + "m " + seconds + "s ";
+            if (timeLeft < 0) {
+              document.getElementById("demo").innerHTML = "EXPIRED";
+              document.getElementById('dish-select-btn').setAttribute("disabled", "true");
+              let status = document.getElementById('status');
+              status.classList.remove('text-success');
+              status.classList.add('text-danger');
+              status.innerHTML = 'closed'
+            } else {
+              setTimeout(makeTimer, 1000)
+            }
+          }
+          makeTimer()
+        </script>
       {% endfor %}
     </div>
   </div>
   <div class="col-sm-5 col-lg-5">chi phi</div>
+  <div class='pagination justify-content-center'>
+    {% if menu_list.has_previous %}
+      <a href='{% url "polls" menu_list.previous_page_number %}'>Previous </a>
+    {% endif %}
+
+    <span class='mx-4'>
+      Page {{ menu_list.number }} of {{ menu_list.paginator.num_pages }}
+    </span>
+
+    {% if menu_list.has_next %}
+      <a href='{% url "polls" menu_list.next_page_number %}' > Next</a>
+    {% endif %}
+  </div>
 </div>
   {% endblock %}
 </div>
