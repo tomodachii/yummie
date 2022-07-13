@@ -1,9 +1,8 @@
 from django import forms
 from django.forms import SplitDateTimeWidget, TimeInput, DateInput
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.forms import ModelForm
-from django.contrib.auth.models import User
-from .models import Menu
+from .models import Menu, User
 import datetime
 
 
@@ -16,7 +15,7 @@ class NewUserForm(UserCreationForm):
     class Meta:
         model = User
         fields = ("username", "email", "first_name",
-                  "last_name", "password1", "password2")
+                  "last_name", "gender", "password1", "password2")
 
     def save(self, commit=True):
         user = super(NewUserForm, self).save(commit=False)
@@ -25,6 +24,11 @@ class NewUserForm(UserCreationForm):
             user.save()
         return user
 
+class CustomUserChangeForm(UserChangeForm):
+
+    class Meta:
+        model = User
+        fields = ("username", "email")
 
 class NewVoteForm(forms.Form):
     vote = forms.CharField(

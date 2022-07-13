@@ -1,9 +1,8 @@
 # Used to generate URLs by reversing the URL patterns
 from django.urls import reverse
-import uuid  # Required for unique book instances
 from django.db import models
-from django.contrib.auth.models import User
-import datetime
+from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 
 
 class Dish(models.Model):
@@ -56,7 +55,7 @@ class Menu(models.Model):
 
 class Vote(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True)
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     menu = models.ForeignKey(
         Menu, on_delete=models.SET_NULL, null=True, blank=True)
     user_name = models.CharField(max_length=300)
@@ -80,12 +79,29 @@ class Vote(models.Model):
         return f'{self.user_name} {self.dish_name} {self.created_at}'
 
 
-def get_user_name(self):
-    if self.first_name or self.last_name:
-        return self.first_name + " " + self.last_name
-    return self.username
+USER_GENDER_CHOICES = [
+    (0, 'Not declared'),
+    (1, 'Male'),
+    (2, 'Female'),
+]
+
+class User(AbstractUser):
+    gender = models.PositiveSmallIntegerField("Gender", choices=USER_GENDER_CHOICES, default=0)
+    # add additional fields in here
+
+    def __str__(self):
+        return self.username
+
+    def get_user_name(self):
+        if self.first_name or self.last_name:
+            return self.first_name + " " + self.last_name
+        return self.username
+
+    def get_absolute_url(self):
+        """Returns the URL to access a particular author instance."""
+        return reverse('user-detail', args=[str(self.id)])
 
 
-User.add_to_class("get_user_name", get_user_name)
-User.add_to_class("get_absolute_url", lambda self: reverse(
-    'user-detail', args=[str(self.id)]))
+# User.add_to_class("get_user_name", get_user_name)
+# User.add_to_class("get_absolute_url", lambda self: reverse(
+#     'user-detail', args=[str(self.id)]))
