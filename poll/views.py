@@ -207,26 +207,33 @@ class VoteListView(generic.ListView):
 
 @login_required
 def make_vote(request, menu_id, dish_id):
-    menu = Menu.objects.get(pk=menu_id)
-    dish = Dish.objects.get(pk=dish_id)
+    try:
+        menu = Menu.objects.get(pk=menu_id)
+    except Menu.DoesNotExist:
+        raise Http404('Menu does not exist')
+    try:
+        dish = Dish.objects.get(pk=dish_id, menu=menu_id)
+    except Menu.DoesNotExist:
+        raise Http404('Dish does not exist')
     user = request.user
-    message, due, time, temp = '', '', '', 0
-    if (menu):
-        due = convert_to_localtime(menu.due).replace(tzinfo=None)
-        time = datetime.datetime.now().replace(tzinfo=None)
-        temp = due - time
-        temp = total_seconds(temp)
-    print(temp)
+    message = ''
+    flag = True
+    if Vote.objects.filter(menu_id=menu_id, dish_name=dish.name, user_id=user.id):
+        flag = False
     try:
         if request.method == 'POST':
             form = NewVoteForm(request.POST)
             if form.is_valid():
-                if request.POST.get('vote') == 'on' and temp > 0:
+                val = form.cleaned_data.get("btn")
+                # if request.POST.get('btn') == 'vote' and total_seconds(convert_to_localtime(menu.due).replace(tzinfo=None) - datetime.datetime.now().replace(tzinfo=None)) > 0:
+                if val == 'vote' and total_seconds(convert_to_localtime(menu.due).replace(tzinfo=None) - datetime.datetime.now().replace(tzinfo=None)) > 0:    
                     Vote.objects.create(
                         user_id=user.id, menu_id=menu.id, user_name=user.get_user_name(), dish_name=dish.name, cost=dish.price, created_at=datetime.datetime.now())
                     messages.success(
                         request, 'Vote has been successful created!')
                 else:
+                    vote = Vote.objects.filter(menu_id=menu_id, dish_name=dish.name, user_id=user.id)
+                    vote.delete()
                     message = 'Vote has been canceled!'
                 return HttpResponseRedirect(HOME_URL)
             else:
@@ -239,6 +246,7 @@ def make_vote(request, menu_id, dish_id):
             'menu': menu,
             'dish': dish,
             'message': message,
+            'flag': flag,
         })
 
     except Exception as e:
