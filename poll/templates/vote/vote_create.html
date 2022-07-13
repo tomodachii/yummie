@@ -11,11 +11,18 @@
       </p>
       <h5>Giá {{dish.price}}</h5>
       <div class="form-check">
-        {{form}}
-        <div class="form-check-label">Vote</div>
+        {% comment %} {{form}} {% endcomment %}
+        {% if flag %}
+          <input type="submit" class="btn btn-primary" name="btn" value="vote">
+        {% else %}
+          <input type="submit" class="btn btn-danger" name="btn" value="unvote">
+        {% endif %}
+        
       </div>
     </div>
   </div>
 </form>
-<h1>{{temp}}</h1>
+{% if message %}
+  <h1>{{message}}</h1>
+{% endif %}
 {% endblock %}

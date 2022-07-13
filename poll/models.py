@@ -72,7 +72,7 @@ class Vote(models.Model):
         return reverse('vote-detail', args=[str(self.id)])
 
     class Meta:
-        ordering = ['user_name', 'dish_name']
+        ordering = ['-created_at', 'dish_name']
 
     def __str__(self):
         """String for representing the Model object."""

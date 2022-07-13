@@ -31,15 +31,16 @@ class CustomUserChangeForm(UserChangeForm):
         fields = ("username", "email")
 
 class NewVoteForm(forms.Form):
-    vote = forms.CharField(
-        widget=forms.CheckboxInput(
-            attrs={
-                'class': 'form-check-input',
-                'onclick': 'this.form.submit();',
-            }
-        ),
-        label=False,
-    )
+    # vote = forms.CharField(
+    #     widget=forms.CheckboxInput(
+    #         attrs={
+    #             'class': 'form-check-input',
+    #             'onclick': 'this.form.submit();',
+    #         }
+    #     ),
+    #     label=False,
+    # )
+    btn = forms.CharField()
 
 
 class NewPollForm(forms.Form):
