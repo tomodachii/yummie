@@ -1,8 +1,7 @@
 from django.conf import settings
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect
-from .models import Dish, Menu, Vote
-from django.contrib.auth.models import User
+from .models import Dish, Menu, Vote, User
 from .forms import MenuForm, NewUserForm, NewVoteForm
 from django.contrib.auth import login
 from django.contrib import messages
@@ -279,10 +278,12 @@ class VoteDelete(LoginRequiredMixin, DeleteView):
 
 
 class UserListView(generic.ListView):
+    template_name = 'auth/user_list.html'
     model = User
 
 
 class UserDetailView(generic.DetailView):
+    template_name = 'auth/user_detail.html'
     model = User
 
 

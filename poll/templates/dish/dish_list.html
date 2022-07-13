@@ -1,4 +1,11 @@
 {% extends "base_generic.html" %} {% block content %}
+{% if request.user.is_superuser %}
+    <a
+      href="{% url 'dish-create' %}"
+      class="mb-3 btn btn-primary input-block-level btn-block"
+      >Món ăn mới</a
+    >
+{% endif %}
 <h1>Danh sách món ăn</h1>
 {% if dish_list %}
 <ul>
