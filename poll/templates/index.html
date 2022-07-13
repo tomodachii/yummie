@@ -15,7 +15,7 @@
       </h5>
       <div class="d-flex flex-row align-items-center">
         <h5>Time left:</h5>
-        <h5 class="pl-2" id="demo"></h5>
+        <h5 class="pl-2" id="demo-{{menu_instance.menu.id}}"></h5>
       </div>
       <p class="card-text">Danh sách món ăn:</p>
       {% for key, value in menu_instance.results.items %}
@@ -27,7 +27,7 @@
       {% endfor %} {% endfor %}
       <p class="card-text">
         <small class="text-muted"
-          >Trạng thái: <span id="status" class="text-success">open</span></small
+          >Trạng thái: <span id="status-{{menu_instance.menu.id}}" class="text-success">open</span></small
         >
       </p>
       <button
@@ -40,7 +40,7 @@
       </button>
       {% if user.is_authenticated %}
       <button
-        id="dish-select-btn"
+        id="dish-select-btn-{{menu_instance.menu.id}}"
         type="button"
         class="btn btn-primary"
         data-toggle="modal"
@@ -161,7 +161,7 @@
       </div>
     </div>
     <script>
-      function makeTimer() {
+      function makeTimer_{{menu_instance.menu.id}}() {
         let endTime=new Date({{ menu_instance.menu.due|date:"U" }} * 1000);
         endTime = (Date.parse(endTime) / 1000);
         let now = new Date();
@@ -178,20 +178,20 @@
         if (minutes < "10") { minutes = "0" + minutes; }
         if (seconds < "10") { seconds = "0" + seconds; }
 
-        document.getElementById("demo").innerHTML = days + "d " + hours + "h " +
+        document.getElementById("demo-{{menu_instance.menu.id}}").innerHTML = days + "d " + hours + "h " +
           minutes + "m " + seconds + "s ";
         if (timeLeft < 0) {
-          document.getElementById("demo").innerHTML = "EXPIRED";
-          document.getElementById('dish-select-btn').setAttribute("disabled", "true");
-          let status = document.getElementById('status');
+          document.getElementById("demo-{{menu_instance.menu.id}}").innerHTML = "EXPIRED";
+          document.getElementById('dish-select-btn-{{menu_instance.menu.id}}').setAttribute("disabled", "true");
+          let status = document.getElementById('status-{{menu_instance.menu.id}}');
           status.classList.remove('text-success');
           status.classList.add('text-danger');
           status.innerHTML = 'closed'
         } else {
-          setTimeout(makeTimer, 1000)
+          setTimeout(makeTimer_{{menu_instance.menu.id}}, 1000)
         }
       }
-      makeTimer()
+      makeTimer_{{menu_instance.menu.id}}()
     </script>
     {% endfor %}
   </div>

@@ -3,148 +3,197 @@
 <div class="row mt-3">
   <div class="col-sm-7 col-lg-7">
     {% if request.user.is_superuser %}
-      <a href="{% url 'poll-create' %}" class="mb-3 btn btn-primary input-block-level btn-block">Tạo poll</a>
-    {% endif %}
-    <div class="list-group">
-      {% for menu_instance in menu_list %}
-        <div class="list-item p-3 border mb-3">
-            <h5 class="card-title">Menu ngày {{menu_instance.menu.due|date:'d/m/Y, H:i'}}</h5>
-            <div class="d-flex flex-row align-items-center">
-              <h5>Time left:</h5>
-              <h5 class="pl-2" id="demo"></h5>
-            </div>
-            <p class="card-text">
-              Danh sách món ăn: 
-            </p>
-            {% for key, value in menu_instance.results.items %}
-              <h5>{{key}}</h5>
-              {% for item in value %}
-                <a href="{% url 'vote-detail' pk=item.id %}"><span class="text-info">{{item.user_name}}</span></a>
-              {% endfor %}
-            {% endfor %}
-            <p class="card-text">
-              <small class="text-muted"
-                >Trạng thái: <span
-                  id="status"
-                  class="text-success"
-                  >open</span
-                ></small
+    <a
+      href="{% url 'poll-create' %}"
+      class="mb-3 btn btn-primary input-block-level btn-block"
+      >Tạo poll</a
+    >
+    {% endif %} {% for menu_instance in menu_list %}
+    <div class="list-item p-3 border mb-3">
+      <h5 class="card-title">
+        Menu ngày {{menu_instance.menu.due|date:'d/m/Y, H:i'}}
+      </h5>
+      <div class="d-flex flex-row align-items-center">
+        <h5>Time left:</h5>
+        <h5 class="pl-2" id="demo-{{menu_instance.menu.id}}"></h5>
+      </div>
+      <p class="card-text">Danh sách món ăn:</p>
+      {% for key, value in menu_instance.results.items %}
+      <h5>{{key}}</h5>
+      {% for item in value %}
+      <a href="{% url 'vote-detail' pk=item.id %}"
+        ><span class="text-info">{{item.user_name}}</span></a
+      >
+      {% endfor %} {% endfor %}
+      <p class="card-text">
+        <small class="text-muted"
+          >Trạng thái: <span id="status-{{menu_instance.menu.id}}" class="text-success">open</span></small
+        >
+      </p>
+      <button
+        type="button"
+        class="btn btn-primary"
+        data-toggle="modal"
+        data-target="#voteModal-{{menu_instance.menu.id}}"
+      >
+        Thông tin người vote
+      </button>
+      {% if user.is_authenticated %}
+      <button
+        id="dish-select-btn-{{menu_instance.menu.id}}"
+        type="button"
+        class="btn btn-primary"
+        data-toggle="modal"
+        data-target="#foodModal-{{menu_instance.menu.id}}"
+      >
+        Chọn món ăn ngay!!
+      </button>
+      {% else %}
+      <a class="btn btn-primary" href="{% url 'login' %}" class="text-info"
+        >Đăng nhập để vote</a
+      >
+      {% endif %} {% if request.user.is_superuser %}
+      <a
+        href="{% url 'poll-delete' pk=menu_instance.menu.id %}"
+        class="btn btn-danger"
+        >Xóa poll</a
+      >
+      {% endif %} {% if request.user.is_superuser %}
+      <a
+        href="{% url 'poll-update' pk=menu_instance.menu.id %}"
+        class="btn btn-primary"
+        >Sửa poll</a
+      >
+      {% endif %}
+
+      <div
+        class="modal fade"
+        id="foodModal-{{menu_instance.menu.id}}"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="exampleModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">
+                Hết hạn: {{menu_instance.menu.due}}
+              </h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
               >
-            </p>
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#voteModal-{{menu_instance.menu.id}}">
-              Thông tin người vote
-            </button>
-            {% if user.is_authenticated %}
-              <button id="dish-select-btn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#foodModal-{{menu_instance.menu.id}}">
-                Chọn món ăn ngay!!
+                <span aria-hidden="true">&times;</span>
               </button>
-            {% else %}
-              <a class="btn btn-primary" href="{% url 'login' %}" class="text-info">Đăng nhập để vote</a>
-            {% endif %}
-
-            {% if request.user.is_superuser %}
-              <a href="{% url 'poll-delete' pk=menu_instance.menu.id %}" class="btn btn-danger">Xóa poll</a>
-            {% endif %}
-            {% if request.user.is_superuser %}
-              <a href="{% url 'poll-update' pk=menu_instance.menu.id %}" class="btn btn-primary">Sửa poll</a>
-            {% endif %}
-            
-              <div class="modal fade" id="foodModal-{{menu_instance.menu.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="exampleModalLabel">Hết hạn: {{menu_instance.menu.due}}</h5>
-                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="row">
-                      {% for dish_instance in menu_instance.menu.list_dish %}
-                        <div class="col-sm-6 my-2">
-                          <div class="card">
-                            <a class="btn btn-primary" href="{% url 'poll-vote' menu_id=menu_instance.menu.id dish_id=dish_instance.id %}">
-                              <div class="card-body" style="cursor: pointer;">
-                                <h5 class="card-title">{{dish_instance.name}}</h5>
-                                <p class="card-text">{{dish_instance.price}}</p>
-                              </div>
-                            </a>
-                          </div>
-                        </div>
-                      {% endfor %}
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                {% for dish_instance in menu_instance.menu.list_dish %}
+                <div class="col-sm-6 my-2">
+                  <div class="card">
+                    <a
+                      class="btn btn-primary"
+                      href="{% url 'poll-vote' menu_id=menu_instance.menu.id dish_id=dish_instance.id %}"
+                    >
+                      <div class="card-body" style="cursor: pointer">
+                        <h5 class="card-title">{{dish_instance.name}}</h5>
+                        <p class="card-text">{{dish_instance.price}}</p>
                       </div>
-                    </div>
+                    </a>
                   </div>
                 </div>
+                {% endfor %}
               </div>
-
-              <div class="modal fade" id="voteModal-{{menu_instance.menu.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="exampleModalLabel">Menu: {{menu_instance.menu.due}}</h5>
-                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="row">
-                      {% for vote in menu_instance.votes %}
-                        <div class="col-sm-6 my-2">
-                          <div class="card">
-                            {% comment %} <a class="btn btn-primary" href="{% url 'poll-vote' menu_id=menu_instance.menu.id dish_id=dish_instance.id %}"> {% endcomment %}
-                              <div class="card-body" style="cursor: pointer;">
-                                <h5 class="card-title">{{vote.dish_name}}</h5>
-                                <p class="card-text">{{vote.user_name}}</p>
-                              </div>
-                            {% comment %} </a> {% endcomment %}
-                          </div>
-                        </div>
-                      {% endfor %}
-                      </div>
-                      <div class="w-full text-center mt-2">
-                        <a href="{% url 'poll-detail' pk=menu_instance.menu.id %}" class="btn btn-primary">Thông tin chi tiết</a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            </div>
+          </div>
         </div>
-        <script>
-          function makeTimer() {
-            let endTime=new Date({{ menu_instance.menu.due|date:"U" }} * 1000);
-            endTime = (Date.parse(endTime) / 1000);
-            let now = new Date();
-            now = (Date.parse(now) / 1000);
-    
-            let timeLeft = endTime - now;
-    
-            let days = Math.floor(timeLeft / 86400);
-            let hours = Math.floor((timeLeft - (days * 86400)) / 3600);
-            let minutes = Math.floor((timeLeft - (days * 86400) - (hours * 3600 )) / 60);
-            let seconds = Math.floor((timeLeft - (days * 86400) - (hours * 3600) - (minutes * 60)));
-    
-            if (hours < "10") { hours = "0" + hours; }
-            if (minutes < "10") { minutes = "0" + minutes; }
-            if (seconds < "10") { seconds = "0" + seconds; }
-    
-            document.getElementById("demo").innerHTML = days + "d " + hours + "h " +
-              minutes + "m " + seconds + "s ";
-            if (timeLeft < 0) {
-              document.getElementById("demo").innerHTML = "EXPIRED";
-              document.getElementById('dish-select-btn').setAttribute("disabled", "true");
-              let status = document.getElementById('status');
-              status.classList.remove('text-success');
-              status.classList.add('text-danger');
-              status.innerHTML = 'closed'
-            } else {
-              setTimeout(makeTimer, 1000)
-            }
-          }
-          makeTimer()
-        </script>
-      {% endfor %}
+      </div>
+
+      <div
+        class="modal fade"
+        id="voteModal-{{menu_instance.menu.id}}"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="exampleModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">
+                Menu: {{menu_instance.menu.due}}
+              </h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                {% for vote in menu_instance.votes %}
+                <div class="col-sm-6 my-2">
+                  <div class="card">
+                    <div class="card-body" style="cursor: pointer">
+                      <h5 class="card-title">{{vote.dish_name}}</h5>
+                      <p class="card-text">{{vote.user_name}}</p>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="w-full text-center mt-2">
+                <a
+                  href="{% url 'poll-detail' pk=menu_instance.menu.id %}"
+                  class="btn btn-primary"
+                  >Thông tin chi tiết</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+    <script>
+      function makeTimer_{{menu_instance.menu.id}}() {
+        let endTime=new Date({{ menu_instance.menu.due|date:"U" }} * 1000);
+        endTime = (Date.parse(endTime) / 1000);
+        let now = new Date();
+        now = (Date.parse(now) / 1000);
+
+        let timeLeft = endTime - now;
+
+        let days = Math.floor(timeLeft / 86400);
+        let hours = Math.floor((timeLeft - (days * 86400)) / 3600);
+        let minutes = Math.floor((timeLeft - (days * 86400) - (hours * 3600 )) / 60);
+        let seconds = Math.floor((timeLeft - (days * 86400) - (hours * 3600) - (minutes * 60)));
+
+        if (hours < "10") { hours = "0" + hours; }
+        if (minutes < "10") { minutes = "0" + minutes; }
+        if (seconds < "10") { seconds = "0" + seconds; }
+
+        document.getElementById("demo-{{menu_instance.menu.id}}").innerHTML = days + "d " + hours + "h " +
+          minutes + "m " + seconds + "s ";
+        if (timeLeft < 0) {
+          document.getElementById("demo-{{menu_instance.menu.id}}").innerHTML = "EXPIRED";
+          document.getElementById('dish-select-btn-{{menu_instance.menu.id}}').setAttribute("disabled", "true");
+          let status = document.getElementById('status-{{menu_instance.menu.id}}');
+          status.classList.remove('text-success');
+          status.classList.add('text-danger');
+          status.innerHTML = 'closed'
+        } else {
+          setTimeout(makeTimer_{{menu_instance.menu.id}}, 1000)
+        }
+      }
+      makeTimer_{{menu_instance.menu.id}}()
+    </script>
+    {% endfor %}
   </div>
   <div class="col-sm-5 col-lg-5">chi phi</div>
   <div class='pagination justify-content-center'>

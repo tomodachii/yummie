@@ -80,7 +80,7 @@ def get_index(request):
 def get_vote_view(request, page=1):
     menu_list = Menu.objects.all()
     menu_list = map(add_votes_info_to_poll, menu_list)
-    paginator = Paginator(list(menu_list), 1)
+    paginator = Paginator(list(menu_list), 3)
     try:
         menu_list = paginator.page(page)
     except EmptyPage:
