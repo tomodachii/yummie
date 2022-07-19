@@ -212,7 +212,7 @@ def make_vote(request, menu_id, dish_id):
         user = request.user
         message = ''
         flag = True
-        if Vote.objects.filter(menu_id=menu_id, dish_name=dish.name, user_id=user.id):
+        if Vote.objects.filter(menu_id=menu_id, dish_name=dish.name, user_id=user.id).exists():
             flag = False
         if request.method == 'POST':
             form = NewVoteForm(request.POST)
