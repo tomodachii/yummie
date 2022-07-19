@@ -1,0 +1,22 @@
+{% extends "base_generic.html" %} {% block content %}
+<table class="table">
+  <thead class="thread-dark">
+    <tr>
+      <th scope="col">#</th>
+      {% for user in user_list %}
+      <th scope="col">{{user.get_user_name}}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for menu_instance in menu_list %}
+    <tr>
+      <th scope="row">{{menu_instance.menu.due|date:'d/m/Y, H:i'}}</th>
+      {% for item in menu_instance.results %}
+      <td>{{item}}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

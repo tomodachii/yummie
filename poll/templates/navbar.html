@@ -1,23 +1,31 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <!-- Container wrapper -->
   <div class="container-fluid">
-    <a class="navbar-brand" href="{% url 'index'%}">Yummie Project</a>
+    <!-- Toggle button -->
     <button
       class="navbar-toggler"
       type="button"
-      data-toggle="collapse"
-      data-target="#navbarNav"
-      aria-controls="navbarNav"
+      data-mdb-toggle="collapse"
+      data-mdb-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
       aria-expanded="false"
       aria-label="Toggle navigation"
     >
-      <span class="navbar-toggler-icon"></span>
+      <i class="fas fa-bars"></i>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav mr-auto">
+
+    <!-- Collapsible wrapper -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <!-- Navbar brand -->
+      <a class="navbar-brand mt-2 mt-lg-0" href="{% url 'index'%}">
+        Yummie Project
+      </a>
+      <!-- Left links -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item active">
           <a class="nav-link" href="{% url 'polls' page=1%}">Polls</a>
         </li>
-
         <li class="nav-item">
           <a class="nav-link" href="{% url 'dishes'%}">Món ăn</a>
         </li>
@@ -26,27 +34,70 @@
         </li>
         {% if request.user.is_staff %}
         <li class="nav-item">
-          <a class="nav-link" href="#">Quản lý tiền ăn</a>
+          <a class="nav-link" href="{% url 'financial-manage' %}">Quản lý tiền ăn</a>
         </li>
         {% endif %}
       </ul>
+      <!-- Left links -->
+    </div>
+    <!-- Collapsible wrapper -->
+
+    <!-- Right elements -->
+    <div class="d-flex align-items-center">
+      <!-- Icon -->
+      <!-- Notifications -->
+      <div class="dropdown">
+        <a
+          class="text-reset me-3 dropdown-toggle hidden-arrow"
+          href="#"
+          id="navbarDropdownMenuLink"
+          role="button"
+          data-mdb-toggle="dropdown"
+          aria-expanded="false"
+        >
+          <i class="fas fa-bell"></i>
+          <span class="badge rounded-pill badge-notification bg-danger">1</span>
+        </a>
+        <ul
+          class="dropdown-menu dropdown-menu-end"
+          aria-labelledby="navbarDropdownMenuLink"
+        >
+          <li>
+            <a class="dropdown-item" href="#">Some news</a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="#">Another news</a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="#">Something else here</a>
+          </li>
+        </ul>
+      </div>
+      <!-- Avatar -->
       {% if user.is_authenticated %}
       <ul class="navbar-nav">
         <li class="nav-item dropdown">
           <a
-            class="nav-link dropdown-toggle"
+            class="nav-link dropdown-toggle d-flex align-items-center hidden-arrow"
             href="#"
-            id="navbarDropdownMenuLink"
-            data-toggle="dropdown"
-            aria-haspopup="true"
+            id="navbarDropdownMenuAvatar"
+            role="button"
+            data-mdb-toggle="dropdown"
             aria-expanded="false"
           >
-            {{user.get_username}}
+          {{user.get_username}}
           </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-            <a class="dropdown-item" href="{% url "user-detail" pk=request.user.id%}">Profile</a>
-            <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
-          </div>
+          <ul
+            class="dropdown-menu dropdown-menu-end"
+            aria-labelledby="navbarDropdownMenuAvatar"
+          >
+            <li>
+              <a class="dropdown-item" href="{% url "user-detail" pk=request.user.id%}">Profile</a>    
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+            </li>
+          </ul>
         </li>
       </ul>
       {% else %}
@@ -60,5 +111,8 @@
       </ul>
       {% endif %}
     </div>
+    <!-- Right elements -->
   </div>
+  <!-- Container wrapper -->
 </nav>
+<!-- Navbar -->
