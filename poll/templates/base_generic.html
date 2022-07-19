@@ -14,12 +14,21 @@
       integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
       crossorigin="anonymous"
     />
-    {% comment %}
+    <!-- Font Awesome -->
     <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css"
     />
-    {% endcomment %}
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- MDB -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/4.3.0/mdb.min.css"
+      rel="stylesheet"
+    />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.min.css"
@@ -30,7 +39,30 @@
   </head>
   <body>
     {% include 'navbar.html' %}
-    <div class="container-fluid">{% block content %}{% endblock %}</div>
+    <div class="container-fluid py-3 bg-light">
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <div
+          class="{{ message.tags }} alert alert-success alert-dismissible fade show w-35 position-absolute top-0 end-0"
+          style="z-index: 99"
+          role="alert"
+        >
+          {{ message }}
+          <button
+            type="button"
+            class="close"
+            data-dismiss="alert"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        {% endfor %}
+      </ul>
+      {% endif %} {% block content %}{% endblock %}
+    </div>
+    {% include 'footer.html' %}
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <script
@@ -45,9 +77,11 @@
   ></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
-  {% comment %}
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  {% endcomment %}
+  <!-- MDB -->
+  <script
+    type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/4.3.0/mdb.min.js"
+  ></script>
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.9/jquery.datetimepicker.css"
@@ -63,9 +97,11 @@
     referrerpolicy="no-referrer"
   ></script>
   <script>
-    {% comment %} $(function () {
-      $('[data-toggle="tooltip"]').tooltip();
-    }); {% endcomment %}
+    $(".alert")
+      .delay(2000)
+      .slideUp(200, function () {
+        $(this).alert("close");
+      });
     $(function () {
       $("#datetimepicker1").datetimepicker();
     });

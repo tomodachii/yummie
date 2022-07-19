@@ -9,7 +9,7 @@
       >Tạo poll</a
     >
     {% endif %} {% for menu_instance in menu_list %}
-    <div class="list-item p-3 border mb-3">
+    <div class="list-item card p-3 border mb-3">
       <h5 class="card-title">
         Menu ngày {{menu_instance.menu.due|date:'d/m/Y, H:i'}}
       </h5>
@@ -30,41 +30,44 @@
           >Trạng thái: <span id="status-{{menu_instance.menu.id}}" class="text-success">open</span></small
         >
       </p>
-      <button
-        type="button"
-        class="btn btn-primary"
-        data-toggle="modal"
-        data-target="#voteModal-{{menu_instance.menu.id}}"
-      >
-        Thông tin người vote
-      </button>
-      {% if user.is_authenticated %}
-      <button
-        id="dish-select-btn-{{menu_instance.menu.id}}"
-        type="button"
-        class="btn btn-primary"
-        data-toggle="modal"
-        data-target="#foodModal-{{menu_instance.menu.id}}"
-      >
-        Chọn món ăn ngay!!
-      </button>
-      {% else %}
-      <a class="btn btn-primary" href="{% url 'login' %}" class="text-info"
-        >Đăng nhập để vote</a
-      >
-      {% endif %} {% if request.user.is_superuser %}
-      <a
-        href="{% url 'poll-delete' pk=menu_instance.menu.id %}"
-        class="btn btn-danger"
-        >Xóa poll</a
-      >
-      {% endif %} {% if request.user.is_superuser %}
-      <a
-        href="{% url 'poll-update' pk=menu_instance.menu.id %}"
-        class="btn btn-primary"
-        >Sửa poll</a
-      >
-      {% endif %}
+      
+      <div class="flex">
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-toggle="modal"
+          data-target="#voteModal-{{menu_instance.menu.id}}"
+        >
+          Thông tin người vote
+        </button>
+        {% if user.is_authenticated %}
+        <button
+          id="dish-select-btn-{{menu_instance.menu.id}}"
+          type="button"
+          class="btn btn-primary"
+          data-toggle="modal"
+          data-target="#foodModal-{{menu_instance.menu.id}}"
+        >
+          Chọn món ăn ngay!!
+        </button>
+        {% else %}
+        <a class="btn btn-primary" href="{% url 'login' %}" class="text-info"
+          >Đăng nhập để vote</a
+        >
+        {% endif %} {% if request.user.is_superuser %}
+        <a
+          href="{% url 'poll-delete' pk=menu_instance.menu.id %}"
+          class="btn btn-danger"
+          >Xóa poll</a
+        >
+        {% endif %} {% if request.user.is_superuser %}
+        <a
+          href="{% url 'poll-update' pk=menu_instance.menu.id %}"
+          class="btn btn-primary"
+          >Sửa poll</a
+        >
+        {% endif %}
+      </div>
 
       <div
         class="modal fade"

@@ -15,6 +15,9 @@ from django.core.paginator import Paginator, EmptyPage
 import pytz
 from django.utils import timezone
 
+HOME_URL = '/'
+DISH_LIST_URL = '/dishes/'
+
 
 def total_seconds(td):
     # Keep backward compatibility with Python 2.6 which doesn't have
@@ -28,16 +31,6 @@ def total_seconds(td):
 def convert_to_localtime(utc_time):
     utc = utc_time.replace(tzinfo=pytz.UTC)
     return utc.astimezone(timezone.get_current_timezone())
-
-# Create your views here.
-# def store_vote(request):
-#   new_vote = UserVote.objects.create(user=request.user, user_name=request.user.username)
-
-
-HOME_URL = '/'
-DISH_LIST_URL = '/dishes/'
-
-# @login_required
 
 
 def add_votes_info_to_poll(menu):
@@ -59,15 +52,14 @@ def get_index(request):
         datetime.date.today(), datetime.time.max)
     this_month = datetime.datetime.now().month
 
-    try:
-        menu_list = Menu.objects.filter(due__range=(today_min, today_max))
-        menu_list = map(add_votes_info_to_poll, menu_list)
-        user_votes = Vote.objects.filter(user_id=request.user.id)
-        user_total_cost = 0
-        for vote in user_votes:
-            user_total_cost += vote.cost
-    except Menu.DoesNotExist:
-        menu_list = None
+    menu_list = Menu.objects.filter(
+        due__range=(today_min, today_max)).order_by('due')
+    menu_list = map(add_votes_info_to_poll, menu_list)
+    user_votes = Vote.objects.filter(user_id=request.user.id)
+    user_total_cost = 0
+    for vote in user_votes:
+        user_total_cost += vote.cost
+
     return render(request, 'index.html', context={
         "menu_list": menu_list,
         "user_votes": user_votes,
@@ -207,32 +199,34 @@ class VoteListView(generic.ListView):
 
 @login_required
 def make_vote(request, menu_id, dish_id):
+
     try:
-        menu = Menu.objects.get(pk=menu_id)
-    except Menu.DoesNotExist:
-        raise Http404('Menu does not exist')
-    try:
-        dish = Dish.objects.get(pk=dish_id, menu=menu_id)
-    except Menu.DoesNotExist:
-        raise Http404('Dish does not exist')
-    user = request.user
-    message = ''
-    flag = True
-    if Vote.objects.filter(menu_id=menu_id, dish_name=dish.name, user_id=user.id):
-        flag = False
-    try:
+        try:
+            menu = Menu.objects.get(pk=menu_id)
+        except Menu.DoesNotExist:
+            raise Http404('Menu does not exist')
+        try:
+            dish = Dish.objects.get(pk=dish_id, menu=menu_id)
+        except Menu.DoesNotExist:
+            raise Http404('Dish does not exist')
+        user = request.user
+        message = ''
+        flag = True
+        if Vote.objects.filter(menu_id=menu_id, dish_name=dish.name, user_id=user.id):
+            flag = False
         if request.method == 'POST':
             form = NewVoteForm(request.POST)
             if form.is_valid():
                 val = form.cleaned_data.get("btn")
                 # if request.POST.get('btn') == 'vote' and total_seconds(convert_to_localtime(menu.due).replace(tzinfo=None) - datetime.datetime.now().replace(tzinfo=None)) > 0:
-                if val == 'vote' and total_seconds(convert_to_localtime(menu.due).replace(tzinfo=None) - datetime.datetime.now().replace(tzinfo=None)) > 0:    
+                if val == 'vote' and total_seconds(convert_to_localtime(menu.due).replace(tzinfo=None) - datetime.datetime.now().replace(tzinfo=None)) > 0:
                     Vote.objects.create(
                         user_id=user.id, menu_id=menu.id, user_name=user.get_user_name(), dish_name=dish.name, cost=dish.price, created_at=datetime.datetime.now())
                     messages.success(
                         request, 'Vote has been successful created!')
                 else:
-                    vote = Vote.objects.filter(menu_id=menu_id, dish_name=dish.name, user_id=user.id)
+                    vote = Vote.objects.filter(
+                        menu_id=menu_id, dish_name=dish.name, user_id=user.id)
                     vote.delete()
                     message = 'Vote has been canceled!'
                 return HttpResponseRedirect(HOME_URL)
@@ -324,3 +318,27 @@ class UserDelete(LoginRequiredMixin, DeleteView):
 
     def handle_no_permission(self):
         return HttpResponseRedirect(HOME_URL)
+
+
+def add_votes_info_to_financial_manage(menu):
+    results = []
+    votes = Vote.objects.filter(menu_id=menu.id)
+    user_list = User.objects.all()
+    for user in user_list:
+        sum = 0
+        for vote in votes:
+            if user.id == vote.user_id:
+                sum += vote.cost
+        results.append(sum)
+    return {'menu': menu, 'votes': votes, 'results': results}
+
+
+@login_required
+def financial_manage(request):
+    user_list = User.objects.all()
+    menu_list = Menu.objects.all()
+    menu_list = map(add_votes_info_to_financial_manage, menu_list)
+    return render(request, 'financial_manage.html', context={
+        "user_list": user_list,
+        "menu_list": menu_list,
+    })
