@@ -6,12 +6,12 @@ from django.conf import settings
 
 
 class Dish(models.Model):
-    name = models.CharField(max_length=100)
-    price = models.DecimalField(max_digits=20, decimal_places=2)
     DISH_TYPE = (
         ('f', 'Food'),
         ('d', 'Drink'),
     )
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=20, decimal_places=2)
     type = models.CharField(max_length=1, choices=DISH_TYPE,
                             blank=False, default='f', help_text='Dish type')
 
@@ -32,6 +32,17 @@ class Menu(models.Model):
         Dish, help_text="Select dish for this Menu")
     due = models.DateTimeField()
 
+    class Meta:
+        ordering = ['-due']
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return f'{self.time_seconds()}'
+
+    def get_absolute_url(self):
+        """Returns the URL to access a particular author instance."""
+        return reverse('poll-detail', args=[str(self.id)])
+
     def display_dish(self):
         """Create a string for the Dish. This is required to display dish in Admin."""
         return ', '.join(dish.name for dish in self.dish.all())
@@ -41,16 +52,10 @@ class Menu(models.Model):
 
     display_dish.short_description = 'dish list'
 
-    def __str__(self):
-        """String for representing the Model object."""
-        return f'{self.due}'
+    def time_seconds(self):
+        return self.due.strftime("%d/%m/%Y, %H:%M")
 
-    def get_absolute_url(self):
-        """Returns the URL to access a particular author instance."""
-        return reverse('poll-detail', args=[str(self.id)])
-
-    class Meta:
-        ordering = ['-due']
+    time_seconds.short_description = 'menu due' 
 
 
 class Vote(models.Model):
@@ -67,16 +72,21 @@ class Vote(models.Model):
     vote_as = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField()
 
+    class Meta:
+        ordering = ['-created_at', 'dish_name']
+
     def get_absolute_url(self):
         """Returns the URL to access a particular author instance."""
         return reverse('vote-detail', args=[str(self.id)])
 
-    class Meta:
-        ordering = ['-created_at', 'dish_name']
-
     def __str__(self):
         """String for representing the Model object."""
         return f'{self.user_name} {self.dish_name} {self.created_at}'
+
+    # def time_seconds(self):
+    #     return self.created_at.strftime("%d/%m/%Y, %H:%M")
+
+    # time_seconds.short_description = 'created time' 
 
 
 USER_GENDER_CHOICES = [
