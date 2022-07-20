@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 import datetime
 from django.views import generic
@@ -20,8 +21,6 @@ DISH_LIST_URL = '/dishes/'
 
 
 def total_seconds(td):
-    # Keep backward compatibility with Python 2.6 which doesn't have
-    # this method
     if hasattr(td, 'total_seconds'):
         return td.total_seconds()
     else:
@@ -52,9 +51,9 @@ def get_index(request):
         datetime.date.today(), datetime.time.max)
     this_month = datetime.datetime.now().month
 
-    menu_list = Menu.objects.filter(
+    results = Menu.objects.filter(
         due__range=(today_min, today_max)).order_by('due')
-    menu_list = map(add_votes_info_to_poll, menu_list)
+    menu_list = map(add_votes_info_to_poll, results)
     user_votes = Vote.objects.filter(user_id=request.user.id)
     user_total_cost = 0
     for vote in user_votes:
@@ -69,8 +68,7 @@ def get_index(request):
 
 
 def get_vote_view(request, page=1):
-    menu_list = Menu.objects.all()
-    menu_list = map(add_votes_info_to_poll, menu_list)
+    menu_list = map(add_votes_info_to_poll, Menu.objects.all())
     paginator = Paginator(list(menu_list), 3)
     try:
         menu_list = paginator.page(page)
@@ -96,9 +94,11 @@ def register_request(request):
     return render(request=request, template_name="registration/register.html", context={"register_form": form})
 
 
-class MenuCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class MenuCreate(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Menu
     form_class = MenuForm
+    success_message = "The %(due)s menu was created successfully"
+    # success_url = '/success/'
 
     def test_func(self):
         return self.request.user.is_superuser
@@ -107,7 +107,8 @@ class MenuCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return HttpResponseRedirect(HOME_URL)
 
 
-class MenuUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class MenuUpdate(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    success_message = 'Successfully updated the %(due)s menu!'
     model = Menu
     form_class = MenuForm
     # Not recommended (potential security issue if more fields added)
@@ -120,8 +121,9 @@ class MenuUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return HttpResponseRedirect(HOME_URL)
 
 
-class MenuDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class MenuDelete(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Menu
+    success_message = 'Successfully deleted the %(due)s menu!'
     success_url = reverse_lazy('polls', args=[1])
 
     def test_func(self):
@@ -131,8 +133,9 @@ class MenuDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return HttpResponseRedirect(HOME_URL)
 
 
-class DishCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class DishCreate(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Dish
+    success_message = 'Successfully created the %(name)s dish!'
     fields = ['name', 'price', 'type']
     template_name = 'dish/dish_form.html'
 
@@ -143,9 +146,10 @@ class DishCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return HttpResponseRedirect(HOME_URL)
 
 
-class DishUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class DishUpdate(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Dish
     # Not recommended (potential security issue if more fields added)
+    success_message = 'Successfully updated the %(name)s dish!'
     fields = '__all__'
     template_name = 'dish/dish_form.html'
 
@@ -156,8 +160,9 @@ class DishUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return HttpResponseRedirect(HOME_URL)
 
 
-class DishDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class DishDelete(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Dish
+    success_message = 'Successfully deleted the %(name)s dish!'
     success_url = reverse_lazy('dishes')
     template_name = 'dish/dish_confirm_delete.html'
 
@@ -199,7 +204,6 @@ class VoteListView(generic.ListView):
 
 @login_required
 def make_vote(request, menu_id, dish_id):
-
     try:
         try:
             menu = Menu.objects.get(pk=menu_id)
@@ -210,7 +214,6 @@ def make_vote(request, menu_id, dish_id):
         except Menu.DoesNotExist:
             raise Http404('Dish does not exist')
         user = request.user
-        message = ''
         flag = True
         if Vote.objects.filter(menu_id=menu_id, dish_name=dish.name, user_id=user.id).exists():
             flag = False
@@ -228,7 +231,7 @@ def make_vote(request, menu_id, dish_id):
                     vote = Vote.objects.filter(
                         menu_id=menu_id, dish_name=dish.name, user_id=user.id)
                     vote.delete()
-                    message = 'Vote has been canceled!'
+                    messages.error(request, 'Vote has been canceled!')
                 return HttpResponseRedirect(HOME_URL)
             else:
                 messages.warning(request, 'Please correct the error below.')
@@ -239,7 +242,6 @@ def make_vote(request, menu_id, dish_id):
             'form': form,
             'menu': menu,
             'dish': dish,
-            'message': message,
             'flag': flag,
         })
 
@@ -248,8 +250,9 @@ def make_vote(request, menu_id, dish_id):
         return HttpResponseRedirect(HOME_URL)
 
 
-class VoteUpdate(LoginRequiredMixin, UpdateView):
+class VoteUpdate(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     model = Vote
+    success_message = 'Successfully updated the %(dish_name)s vote of %(user_name)s!'
     # Not recommended (potential security issue if more fields added)
     fields = '__all__'
     template_name = 'vote/vote_form.html'
@@ -264,8 +267,9 @@ class VoteUpdate(LoginRequiredMixin, UpdateView):
         return HttpResponseRedirect(HOME_URL)
 
 
-class VoteDelete(LoginRequiredMixin, DeleteView):
+class VoteDelete(SuccessMessageMixin, LoginRequiredMixin, DeleteView):
     model = Vote
+    success_message = 'Successfully deleted the %(dish_name)s vote of %(user_name)s!'
     success_url = reverse_lazy('polls', args=[1])
     template_name = 'vote/vote_confirm_delete.html'
 
@@ -289,8 +293,9 @@ class UserDetailView(generic.DetailView):
     model = User
 
 
-class UserUpdate(LoginRequiredMixin, UpdateView):
+class UserUpdate(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     model = User
+    success_message = 'Successfully updated user %(username)s!'
     # Not recommended (potential security issue if more fields added)
     fields = '__all__'
     template_name = 'auth/user_form.html'
@@ -305,8 +310,9 @@ class UserUpdate(LoginRequiredMixin, UpdateView):
         return HttpResponseRedirect(HOME_URL)
 
 
-class UserDelete(LoginRequiredMixin, DeleteView):
+class UserDelete(SuccessMessageMixin, LoginRequiredMixin, DeleteView):
     model = User
+    success_message = 'Successfully deleted user %(username)s!'
     success_url = reverse_lazy('polls', args=[1])
     template_name = 'auth/user_confirm_delete.html'
 
