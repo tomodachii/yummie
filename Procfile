@@ -1,1 +1,1 @@
-web: gunicorn poll.wsgi --log-file -
+web: gunicorn yummie.wsgi --log-file -
