@@ -31,7 +31,7 @@ class MenuAdmin(admin.ModelAdmin):
 
 @admin.register(Vote)
 class VoteAdmin(admin.ModelAdmin):
-    list_display = ['user', 'user_name', 'menu', 'cost', 'vote_as', 'time_seconds']
+    list_display = ['user', 'user_name', 'menu', 'dish_name', 'cost', 'vote_as', 'time_seconds']
 
     @admin.display(ordering='vote__created_at')
     def time_seconds(self, obj):
