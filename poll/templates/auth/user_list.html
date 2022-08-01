@@ -11,14 +11,14 @@
     </tr>
   </thead>
   <tbody>
-    {% for user in user_list %}
+    {% for user_instance in user_list %}
     <tr>
-      <th scope="row"><a href="{% url 'user-detail' pk=user.id%}" class="text-decoration-none text-black" style="cursor:pointer">{{user.username}}</a></th>
-      <td>{{user.get_user_name}}</td>
-      <td>{{user.email}}</td>
-      {% if user.gender == 0 %}
+      <th scope="row"><a href="{% url 'user-detail' pk=user_instance.id%}" class="text-decoration-none text-black" style="cursor:pointer">{{user_instance.username}}</a></th>
+      <td>{{user_instance.get_user_name}}</td>
+      <td>{{user_instance.email}}</td>
+      {% if user_instance.gender == 0 %}
         <td>Not declared</td>
-      {% elif user.gender == 1 %}
+      {% elif user_instance.gender == 1 %}
         <td>Male</td>
       {% else %}
         <td>Female</td>

@@ -1,3 +1,4 @@
+from urllib import request
 from django.conf import settings
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect
@@ -9,7 +10,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 import datetime
 from django.views import generic
 from django.core.paginator import Paginator, EmptyPage
@@ -153,6 +154,13 @@ class DishUpdate(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, U
     fields = '__all__'
     template_name = 'dish/dish_form.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        # here you can make your custom validation for any particular user
+        if not request.user.is_superuser:
+            messages.error(request, 'Permission Denied!')
+        # return HttpResponseRedirect(HOME_URL)
+        return super().dispatch(request, *args, **kwargs)
+
     def test_func(self):
         return self.request.user.is_superuser
 
@@ -162,9 +170,15 @@ class DishUpdate(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, U
 
 class DishDelete(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Dish
-    success_message = 'Successfully deleted the %(name)s dish!'
+    success_message = 'Successfully deleted dish!'
     success_url = reverse_lazy('dishes')
     template_name = 'dish/dish_confirm_delete.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        # here you can make your custom validation for any particular user
+        if not request.user.is_superuser:
+            messages.error(request, 'Permission Denied!')
+        return super().dispatch(request, *args, **kwargs)
 
     def test_func(self):
         return self.request.user.is_superuser
@@ -290,6 +304,7 @@ class UserListView(generic.ListView):
 
 class UserDetailView(generic.DetailView):
     template_name = 'auth/user_detail.html'
+    context_object_name = 'user_instance'
     model = User
 
 
@@ -300,11 +315,22 @@ class UserUpdate(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     fields = '__all__'
     template_name = 'auth/user_form.html'
 
-    def get_object(self, *args, **kwargs):
+    # def get_object(self, *args, **kwargs):
+    #     obj = super(UserUpdate, self).get_object(*args, **kwargs)
+    #     if not self.request.user.is_superuser and not obj == self.request.user:
+    #         # return HttpResponseRedirect(HOME_URL) 
+    #         raise Http404  # maybe you'll need to write a middleware to catch 403's same way
+    #     return obj
+
+    def dispatch(self, request, pk, *args, **kwargs):
+        # here you can make your custom validation for any particular user
         obj = super(UserUpdate, self).get_object(*args, **kwargs)
-        if not self.request.user.is_superuser and not obj.user == self.request.user:
-            raise Http404  # maybe you'll need to write a middleware to catch 403's same way
-        return obj
+        if not request.user.is_authenticated:
+            messages.error(request, 'Permission Denied!')
+        if not self.request.user.is_superuser and not obj == self.request.user:
+            messages.error(request, 'Permission Denied!')
+            return HttpResponseRedirect(HOME_URL)
+        return super().dispatch(request, *args, **kwargs)
 
     def handle_no_permission(self):
         return HttpResponseRedirect(HOME_URL)
@@ -318,9 +344,15 @@ class UserDelete(SuccessMessageMixin, LoginRequiredMixin, DeleteView):
 
     def get_object(self, *args, **kwargs):
         obj = super(UserDelete, self).get_object(*args, **kwargs)
-        if not self.request.user.is_superuser and not obj.user == self.request.user:
+        if not self.request.user.is_superuser and not obj == self.request.user:
             raise Http404  # maybe you'll need to write a middleware to catch 403's same way
         return obj
+
+    def dispatch(self, request, *args, **kwargs):
+        # here you can make your custom validation for any particular user
+        if not request.user.is_authenticated:
+            messages.error(request, 'Permission Denied!')
+        return super().dispatch(request, *args, **kwargs)
 
     def handle_no_permission(self):
         return HttpResponseRedirect(HOME_URL)

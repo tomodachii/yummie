@@ -44,7 +44,12 @@
       <ul class="messages">
         {% for message in messages %}
         <div
+          {% if message.tags == 'error' %}
+          class="{{ message.tags }} alert alert-danger alert-dismissible fade show w-35 position-absolute top-0 end-0"
+          {% else %}
           class="{{ message.tags }} alert alert-success alert-dismissible fade show w-35 position-absolute top-0 end-0"
+          {% endif %}
+          
           style="z-index: 99"
           role="alert"
         >
